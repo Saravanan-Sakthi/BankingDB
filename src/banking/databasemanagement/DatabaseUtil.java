@@ -83,21 +83,21 @@ public class DatabaseUtil{
         }
     }
 
-    public void setCustomer(Customers cusDetails, Accounts accDetails) {
+    public void setCustomer(Customers customerDetails, Accounts accountDetails) {
         try {
             PreparedStatement st = connection.prepareStatement("INSERT INTO Customers (Name,Email,City,Mobile) VALUES (?,?,?,?)");
-            st.setString(1, cusDetails.getName());
-            st.setString(2, cusDetails.getEmail());
-            st.setString(3, cusDetails.getCity());
-            st.setLong(4, cusDetails.getMobile());
+            st.setString(1, customerDetails.getName());
+            st.setString(2, customerDetails.getEmail());
+            st.setString(3, customerDetails.getCity());
+            st.setLong(4, customerDetails.getMobile());
             st.executeUpdate();
             ResultSet resSet = st.executeQuery("SELECT * FROM Customers WHERE Cid=(SELECT MAX(Cid) FROM Customers);");
             while (resSet.next()) {
                 long cid = resSet.getInt("Cid");
-                accDetails.setCustomerID(cid);
+                accountDetails.setCustomerID(cid);
             }
             resSet.close();
-            setAccount(accDetails);
+            setAccount(accountDetails);
             st.close();
         } catch (SQLException e) {
             e.printStackTrace();
