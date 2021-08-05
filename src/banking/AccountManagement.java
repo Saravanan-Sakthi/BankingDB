@@ -108,14 +108,15 @@ public class AccountManagement {
             try {
                 System.out.print("1. Account Details\n2. Customer Details\n3. Exit\nEnter the option: ");
                 int option = scan.nextInt();
+                if (option==3){
+                    break;
+                }
                 System.out.print("Enter your customer ID: ");
                 long customerID=scan.nextLong();
                 if (option == 1) {
                     retrieveAccountData(customerID);
                 } else if (option == 2) {
                     retrieveCustomerData(customerID);
-                } else if (option == 3) {
-                    break;
                 } else {
                     System.out.println("Invalid input\n");
                 }
