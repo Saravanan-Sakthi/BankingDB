@@ -46,7 +46,7 @@ public class AccountManagement {
             scan.nextLine();
             System.out.print("Enter the branch: ");
             accountDetails.setBranch(scan.nextLine());
-            System.out.print("1. Quick access\n2. Normal access");
+            System.out.print("1. Quick access\n2. Normal access\nEnter the option : ");
             int access=scan.nextInt();
             scan.nextLine();
             if(access==1){
