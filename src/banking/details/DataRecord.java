@@ -1,13 +1,38 @@
 package banking.details;
 
+import banking.databasemanagement.DatabaseUtil;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DataRecord {
     private static DataRecord record = null;
     private HashMap<Long, HashMap> accountDetails = new HashMap<>();
     private HashMap<Long, Customers> customerDetails = new HashMap<>();
+    private ArrayList tempList= new ArrayList();
 
     private DataRecord() {
+    }
+
+    public void updatePresent(){
+        if (tempList.size()!=0) {
+            DatabaseUtil.getObject().setCustomer(tempList);
+            tempList.clear();
+        }
+    }
+
+    public void addToTempList(Object data){
+        Class dataClass= data.getClass();
+        String className = dataClass.getName();
+        if (className.equals("banking.details.Accounts") || className.equals("banking.details.Customers")){
+            System.out.println(className);
+            tempList.add(data);
+            System.out.println("added to tempList");
+            if (tempList.size()>10 && !className.equals("banking.details.Customers")){
+                DatabaseUtil.getObject().setCustomer(tempList);
+                tempList.clear();
+            }
+        }
     }
 
     public static DataRecord getInstance() {
@@ -17,11 +42,11 @@ public class DataRecord {
         return record;
     }
 
-    public void addCustomer(Customers detail) {
+    public void addCustomerToMemory(Customers detail) {
         customerDetails.put(detail.getCustomerID(), detail);
     }
 
-    public void addAccount(Accounts detail) {
+    public void addAccountToMemory(Accounts detail) {
         HashMap<Long, Accounts> accountDetails = this.accountDetails.get(detail.getCustomerID());
         if (accountDetails != null) {
             accountDetails.put(detail.getAccountNumber(), detail);

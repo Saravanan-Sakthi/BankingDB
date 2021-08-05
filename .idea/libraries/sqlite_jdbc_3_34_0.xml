@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="sqlite-jdbc-3.34.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/idea-IC-212.4746.92/plugins/svn4idea/lib/sqlite-jdbc-3.34.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/mysql-connector-java-8.0.26/mysql-connector-java-8.0.26.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
