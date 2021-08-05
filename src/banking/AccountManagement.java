@@ -82,7 +82,7 @@ public class AccountManagement {
             accountDetails.setAccountBalance(scan.nextInt());
             scan.nextLine();
             System.out.print("Enter the branch: ");
-            accountDetails.setBranch(scan.next());System.out.print("1. Quick access\n2. Normal access");
+            accountDetails.setBranch(scan.next());System.out.print("1. Quick access\n2. Normal access\nEnter the oprion : ");
             int access=scan.nextInt();
             scan.nextLine();
             if(access==1){

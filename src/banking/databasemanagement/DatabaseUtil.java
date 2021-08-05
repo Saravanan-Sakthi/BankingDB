@@ -20,7 +20,7 @@ public class DatabaseUtil{
     private DatabaseUtil() {
         try {
             //Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/banking", "root", "Sara@2303");
             System.out.println("connection established");
         }
         //catch( ClassNotFoundException e){

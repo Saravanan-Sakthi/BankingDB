@@ -16,6 +16,7 @@ public class DataRecord {
 
     public void updatePresent(){
         if (tempList.size()!=0) {
+            System.out.println("Updating data to DB");
             DatabaseUtil.getObject().setCustomer(tempList);
             tempList.clear();
         }
@@ -30,6 +31,7 @@ public class DataRecord {
             System.out.println("added to tempList");
             if (tempList.size()>10 && !className.equals("banking.details.Customers")){
                 DatabaseUtil.getObject().setCustomer(tempList);
+                System.out.println("Updating data to DB");
                 tempList.clear();
             }
         }
