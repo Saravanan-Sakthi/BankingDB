@@ -115,6 +115,6 @@ public class DatabaseUtil{
         } catch (SQLException e) {
             System.out.println(e);
         }
-        AccountManagement.numOfOperations++;
+        AccountManagement.updatedRecords++;
     }
 }
