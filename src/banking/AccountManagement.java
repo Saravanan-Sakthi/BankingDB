@@ -13,7 +13,6 @@ public class AccountManagement {
     public static Scanner scan = BankingDriver.scan;
     public static int updatedRecords;
     public static int fetchedRecords;
-//  private  DatabaseUtil db;
     public void create() {
         while (true) {
             System.out.print("1. Existing customer\n2. New customer\n3. Exit\nEnter the option: ");
