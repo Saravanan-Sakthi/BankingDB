@@ -8,15 +8,15 @@ import java.util.Scanner;
 public class BankingDriver {
     public static Scanner scan = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         while (true) {
-            System.out.print("1. Add Account\n2. View details\n3. Exit\nEnter the option: ");
+            System.out.print("1. Create Account\n2. View details\n3. Exit\nEnter the option: ");
             try {
-                int option = AccountManagement.scan.nextInt();
+                int option = scan.nextInt();
                 if (option == 1) {
-                    new AccountManagement().create();
+                    new AccountManagement().createData();
                 } else if (option == 2) {
-                    new AccountManagement().getData();
+                    new AccountManagement().viewData();
                 } else if (option == 3) {
                     DatabaseUtil.closeConnection();
                     break;

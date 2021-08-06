@@ -19,7 +19,7 @@ public class DatabaseUtil{
     private DatabaseUtil() {
         try {
             //Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/banking", "root", "Sara@2303");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
             System.out.println("connection established");
         }
         //catch( ClassNotFoundException e){
@@ -91,32 +91,27 @@ public class DatabaseUtil{
         }
     }
 
-    public void setCustomer(ArrayList <Object> dataList){
+    public void setCustomer(ArrayList <ArrayList> dataList){
         for (int i=0;i<dataList.size();i++){
-            Class data=dataList.get(i).getClass();
-            if (data.getName().equals("banking.details.Customers")){
-                setCustomer((Customers)dataList.get(i),(Accounts)dataList.get(++i));
-            }
-            else{
-                setAccount((Accounts)dataList.get(i));
-            }
+            ArrayList<Object> customerPlusAccount = dataList.get(i);
+            setCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
         }
     }
 
     public void setCustomer(Customers customerDetails, Accounts accountDetails) {
         try {
-            PreparedStatement st = connection.prepareStatement("INSERT INTO Customers (Name,Email,City,Mobile) VALUES (?,?,?,?)");
+            String query="INSERT INTO Customers (Name,Email,City,Mobile) VALUES (?,?,?,?)";
+            PreparedStatement st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             st.setString(1, customerDetails.getName());
             st.setString(2, customerDetails.getEmail());
             st.setString(3, customerDetails.getCity());
             st.setLong(4, customerDetails.getMobile());
             st.executeUpdate();
-            ResultSet resSet = st.executeQuery("SELECT * FROM Customers WHERE Customer_ID=(SELECT MAX(Customer_ID) FROM Customers);");
-            while (resSet.next()) {
-                long customerID = resSet.getInt("Customer_ID");
-                accountDetails.setCustomerID(customerID);
-            }
+            ResultSet resSet = st.getGeneratedKeys();
+            resSet.next();
+            long lastID= resSet.getLong(1);
             resSet.close();
+            accountDetails.setCustomerID(lastID);
             setAccount(accountDetails);
             st.close();
         } catch (SQLException e) {
@@ -133,10 +128,10 @@ public class DatabaseUtil{
             st.setString(3, details.getBranch());
             st.executeUpdate();
             st.close();
+            DataRecord.fetchedRecords=0;
         } catch (SQLException e) {
             closeConnection();
             System.out.println(e);
         }
-        AccountManagement.updatedRecords++;
     }
 }
