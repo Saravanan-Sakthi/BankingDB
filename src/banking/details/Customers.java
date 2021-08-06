@@ -1,6 +1,6 @@
 package banking.details;
 
-public class Customers {
+public class Customers {  // Plain Old Java Object for Customer info.
     private long customerID;
     private String name;
     private String email;
@@ -49,12 +49,11 @@ public class Customers {
 
     @Override
     public String toString() {
-        String output = "\nCustomer Details\n" +
+        return "\nCustomer Details\n" +
                 "Customer ID      : " + customerID + "\n" +
                 "Name             : " + name + "\n" +
                 "Email ID         : " + email + "\n" +
                 "Mobile Number    : " + mobile + "\n" +
                 "City             : " + city + "\n";
-        return output;
     }
 }

@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.DriverManager;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class DatabaseUtil{
     private static Connection connection = null;
@@ -92,7 +91,7 @@ public class DatabaseUtil{
         }
     }
 
-    public void setCustomer(ArrayList dataList){
+    public void setCustomer(ArrayList <Object> dataList){
         for (int i=0;i<dataList.size();i++){
             Class data=dataList.get(i).getClass();
             if (data.getName().equals("banking.details.Customers")){

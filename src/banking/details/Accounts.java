@@ -1,6 +1,6 @@
 package banking.details;
 
-public class Accounts {
+public class Accounts {  // Plain Old Java Object for account info
     private long accountNumber;
     private long customerID;
     private float accountBalance;
@@ -40,10 +40,9 @@ public class Accounts {
 
     @Override
     public String toString() {
-        String output = "\nAccount Details\n" +
+        return "\nAccount Details\n" +
                 "Account Number   : " + this.accountNumber + "\n" +
                 "Account Branch   : " + this.branch + "\n" +
                 "Account Balance  : " + this.accountBalance + "\n\n";
-        return output;
     }
 }

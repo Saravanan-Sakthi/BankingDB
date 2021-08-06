@@ -81,7 +81,7 @@ public class AccountManagement {
             accountDetails.setAccountBalance(scan.nextInt());
             scan.nextLine();
             System.out.print("Enter the branch: ");
-            accountDetails.setBranch(scan.next());System.out.print("1. Quick access\n2. Normal access\nEnter the oprion : ");
+            accountDetails.setBranch(scan.next());System.out.print("1. Quick access\n2. Normal access\nEnter the option : ");
             int access=scan.nextInt();
             scan.nextLine();
             if(access==1){
@@ -135,11 +135,11 @@ public class AccountManagement {
         }
         fetchedRecords++;
         updatedRecords = 0;
-        HashMap customerDetails = DataRecord.getInstance().getCustomerDetails();
-        HashMap accountDetails = DataRecord.getInstance().getAccountDetails();
+        HashMap<Long,Customers> customerDetails = DataRecord.getInstance().getCustomerDetails();
+        HashMap <Long,HashMap<Long,Accounts>> accountDetails  = DataRecord.getInstance().getAccountDetails();
         if (customerDetails.containsKey(customerID)) {
             System.out.print(customerDetails.get(customerID) + "\n");
-            HashMap<Integer, Accounts> accountMap = (HashMap<Integer, Accounts>) accountDetails.get(customerID);
+            HashMap<Long, Accounts> accountMap = accountDetails.get(customerID);
             for (Accounts detail : accountMap.values()) {
                 System.out.print(detail);
             }
@@ -156,11 +156,11 @@ public class AccountManagement {
         }
         fetchedRecords++;
         updatedRecords = 0;
-        HashMap customerDetails = DataRecord.getInstance().getCustomerDetails();
-        HashMap accountDetails = DataRecord.getInstance().getAccountDetails();
+        HashMap<Long,Customers> customerDetails = DataRecord.getInstance().getCustomerDetails();
+        HashMap<Long,HashMap<Long,Accounts>> accountDetails = DataRecord.getInstance().getAccountDetails();
         if (customerDetails.containsKey(customerID)) {
             System.out.print(customerDetails.get(customerID) + "\n");
-            HashMap<Integer, Accounts> accountMap = (HashMap<Integer, Accounts>) accountDetails.get(customerID);
+            HashMap<Long, Accounts> accountMap =  accountDetails.get(customerID);
             for (Accounts detail : accountMap.values()) {
                 System.out.print(detail);
             }
