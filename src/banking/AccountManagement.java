@@ -47,8 +47,8 @@ public class AccountManagement {
                 scan.nextLine();
                 System.out.print("Enter the branch: ");
                 accountDetails.setBranch(scan.nextLine());
-                DatabaseUtil.getObject().setAccount(accountDetails);
-                System.out.println("New account created");
+                Accounts addedInfo= DatabaseUtil.getObject().uploadAccount(accountDetails);
+                System.out.println("New account created\n"+ addedInfo+"\n");
             }
             else {
                 System.out.println("Invalid Customer ID");
@@ -83,7 +83,8 @@ public class AccountManagement {
             Customers customerDetails = DataRecord.getCustomerObject(name, email, mobile, city);
             Accounts accountDetails = DataRecord.getAccountObject(accountBalance, branch);
             if(access==1){
-                DatabaseUtil.getObject().setCustomer(customerDetails,accountDetails);
+                ArrayList addedInfo = DatabaseUtil.getObject().uploadCustomer(customerDetails,accountDetails);
+                System.out.println(addedInfo);
             }
             else if (access ==2) {
                 DataRecord.getInstance().addToTempList(customerDetails, accountDetails);

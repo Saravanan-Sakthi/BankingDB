@@ -1,6 +1,5 @@
 package banking.databasemanagement;
 
-import banking.AccountManagement;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
@@ -20,7 +19,7 @@ public class DatabaseUtil{
         try {
             //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
-            System.out.println("connection established");
+            //System.out.println("connection established");
         }
         //catch( ClassNotFoundException e){
         // e.printStackTrace();
@@ -41,16 +40,16 @@ public class DatabaseUtil{
         if (connection != null) {
             try {
                 connection.close();
-                System.out.println("Connection closed");
+                //System.out.println("Connection closed");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("No connection established");
+            //System.out.println("No connection established");
         }
     }
 
-    public void updateAccountRecord() {
+    public void downloadAccountRecord() {
         try {
             Statement st = connection.createStatement();
             ResultSet resSet = st.executeQuery("SELECT * FROM Accounts;");
@@ -65,12 +64,11 @@ public class DatabaseUtil{
             resSet.close();
             st.close();
         } catch (SQLException e) {
-            closeConnection();
             e.printStackTrace();
         }
     }
 
-    public void updateCustomerRecord() {
+    public void downloadCustomerRecord() {
         try {
             Statement st = connection.createStatement();
             ResultSet resSet = st.executeQuery("SELECT * FROM Customers");
@@ -86,19 +84,19 @@ public class DatabaseUtil{
             resSet.close();
             st.close();
         } catch (SQLException e) {
-            closeConnection();
             e.printStackTrace();
         }
     }
 
-    public void setCustomer(ArrayList <ArrayList> dataList){
+    public void uploadCustomer(ArrayList <ArrayList> dataList){
         for (int i=0;i<dataList.size();i++){
             ArrayList<Object> customerPlusAccount = dataList.get(i);
-            setCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
+            uploadCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
         }
     }
 
-    public void setCustomer(Customers customerDetails, Accounts accountDetails) {
+    public ArrayList<Object> uploadCustomer(Customers customerDetails, Accounts accountDetails) {
+        ArrayList<Object> customerPlusAccount = new ArrayList<>();
         try {
             String query="INSERT INTO Customers (Name,Email,City,Mobile) VALUES (?,?,?,?)";
             PreparedStatement st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -111,27 +109,36 @@ public class DatabaseUtil{
             resSet.next();
             long lastID= resSet.getLong(1);
             resSet.close();
+            customerDetails.setCustomerID(lastID);
             accountDetails.setCustomerID(lastID);
-            setAccount(accountDetails);
+            customerPlusAccount.add(customerDetails);
+            customerPlusAccount.add(accountDetails);
+            uploadAccount(accountDetails);
             st.close();
         } catch (SQLException e) {
-            closeConnection();
             e.printStackTrace();
         }
+        return customerPlusAccount;
     }
 
-    public void setAccount(Accounts details) {
+    public Accounts uploadAccount(Accounts details) {
         try {
-            PreparedStatement st = connection.prepareStatement("INSERT INTO Accounts (Customer_ID,Account_Balance,Branch) VALUES (?,?,?)");
+            String query="INSERT INTO Accounts (Customer_ID,Account_Balance,Branch) VALUES (?,?,?)";
+            PreparedStatement st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             st.setLong(1, details.getCustomerID());
             st.setFloat(2, details.getAccountBalance());
             st.setString(3, details.getBranch());
             st.executeUpdate();
+            ResultSet resSet = st.getGeneratedKeys();
+            resSet.next();
+            long lastID= resSet.getLong(1);
+            resSet.close();
             st.close();
+            details.setAccountNumber(lastID);
             DataRecord.fetchedRecords=0;
         } catch (SQLException e) {
-            closeConnection();
             System.out.println(e);
         }
+        return details;
     }
 }

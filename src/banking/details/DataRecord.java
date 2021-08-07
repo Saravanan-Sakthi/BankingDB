@@ -26,8 +26,8 @@ public class DataRecord {
 
     public void updatePresent(){   // Updating data to DB without waiting fo the temporary ArrayList to fill in case of emergency
         if (cacheList.size()!=0) {
-            System.out.println("Updating data to DB");
-            DatabaseUtil.getObject().setCustomer(cacheList);
+            //System.out.println("Updating data to DB");
+            DatabaseUtil.getObject().uploadCustomer(cacheList);
             cacheList.clear();
         }
     }
@@ -61,9 +61,9 @@ public class DataRecord {
 
     public void fetchData(){
         if (fetchedRecords==0) {
-            System.out.println("Fetching from DB");
-            DatabaseUtil.getObject().updateCustomerRecord();
-            DatabaseUtil.getObject().updateAccountRecord();
+            //System.out.println("Fetching from DB");
+            DatabaseUtil.getObject().downloadCustomerRecord();
+            DatabaseUtil.getObject().downloadAccountRecord();
             fetchedRecords++;
         }
     }
