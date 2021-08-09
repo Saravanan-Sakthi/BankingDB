@@ -2,6 +2,7 @@ package banking.details;
 
 import banking.databasemanagement.DatabaseUtil;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -24,7 +25,7 @@ public class DataRecord {
     }
 
 
-    public void updatePresent(){   // Updating data to DB without waiting fo the temporary ArrayList to fill in case of emergency
+    public void updatePresent() throws SQLException {   // Updating data to DB without waiting fo the temporary ArrayList to fill in case of emergency
         if (cacheList.size()!=0) {
             //System.out.println("Updating data to DB");
             DatabaseUtil.getObject().uploadCustomer(cacheList);
@@ -32,7 +33,7 @@ public class DataRecord {
         }
     }
 
-    public void addToTempList(Customers customerInfo, Accounts accountInfo){   // New info both customers' and accounts' are put into a temporary ArrayList
+    public void addToTempList(Customers customerInfo, Accounts accountInfo) throws SQLException{   // New info both customers' and accounts' are put into a temporary ArrayList
         ArrayList <Object>customerPlusAccount= new ArrayList<>();
         customerPlusAccount.add(customerInfo);
         customerPlusAccount.add(accountInfo);
@@ -59,7 +60,7 @@ public class DataRecord {
     }
 
 
-    public void fetchData(){
+    public void fetchData() throws SQLException{
         if (fetchedRecords==0) {
             //System.out.println("Fetching from DB");
             DatabaseUtil.getObject().downloadCustomerRecord();

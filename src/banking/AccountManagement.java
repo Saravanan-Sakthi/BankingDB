@@ -5,6 +5,7 @@ import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -13,28 +14,33 @@ import java.util.Scanner;
 public class AccountManagement {
     public static Scanner scan = BankingDriver.scan;
     public void createData() {
-        while (true) {
-            System.out.print("1. Existing customer\n2. New customer\n3. Exit\nEnter the option: ");
-            int option = 0;
-            if (scan.hasNextInt()) {
-                option = scan.nextInt();
-                scan.nextLine();
-            } else {
-                scan.next();
+        try {
+            while (true) {
+                System.out.print("1. Existing customer\n2. New customer\n3. Exit\nEnter the option: ");
+                int option = 0;
+                if (scan.hasNextInt()) {
+                    option = scan.nextInt();
+                    scan.nextLine();
+                } else {
+                    scan.next();
+                }
+                if (option == 1) {
+                    existingCustomer();
+                } else if (option == 2) {
+                    newCustomer();
+                } else if (option == 3) {
+                    break;
+                } else {
+                    System.out.println("Invalid input");
+                }
             }
-            if (option == 1) {
-                existingCustomer();
-            } else if (option == 2) {
-                newCustomer();
-            } else if (option == 3) {
-                break;
-            } else {
-                System.out.println("Invalid input");
-            }
+        }
+        catch (SQLException e){
+            System.out.println("Unable to process, please try again");
         }
     }
 
-    public void existingCustomer() {
+    public void existingCustomer() throws SQLException {
         DataRecord.getInstance().fetchData();
         try {
             Accounts accountDetails = new Accounts();
@@ -60,7 +66,7 @@ public class AccountManagement {
         }
     }
 
-    public void newCustomer() {
+    public void newCustomer() throws SQLException{
         DataRecord.getInstance().fetchData();
         try {
             System.out.print("Enter your name: ");
@@ -100,31 +106,35 @@ public class AccountManagement {
     }
 
     public void viewData() {
-        DataRecord.getInstance().updatePresent();
-        DataRecord.getInstance().fetchData();
-        while (true) {
-            try {
-                System.out.print("1. Account Details\n2. Customer Details\n3. Exit\nEnter the option: ");
-                int option = scan.nextInt();
-                if (option==3){
-                    break;
-                }
-                System.out.print("Enter your customer ID: ");
-                long customerID=scan.nextLong();
-                if (option == 1) {
-                    System.out.print("Enter your Account Number : ");
-                    long accountNumber= scan.nextLong();
-                    scan.nextLine();
-                    viewAccountData(customerID, accountNumber);
-                } else if (option == 2) {
-                    viewCustomerData(customerID);
-                } else {
-                    System.out.println("Invalid input\n");
+        try {
+            DataRecord.getInstance().updatePresent();
+            DataRecord.getInstance().fetchData();
+            while (true) {
+                try {
+                    System.out.print("1. Account Details\n2. Customer Details\n3. Exit\nEnter the option: ");
+                    int option = scan.nextInt();
+                    if (option == 3) {
+                        break;
+                    }
+                    System.out.print("Enter your customer ID: ");
+                    long customerID = scan.nextLong();
+                    if (option == 1) {
+                        System.out.print("Enter your Account Number : ");
+                        long accountNumber = scan.nextLong();
+                        scan.nextLine();
+                        viewAccountData(customerID, accountNumber);
+                    } else if (option == 2) {
+                        viewCustomerData(customerID);
+                    } else {
+                        System.out.println("Invalid input\n");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input try again");
                 }
             }
-            catch(InputMismatchException e){
-                System.out.println("Invalid input try again");
-            }
+        }
+        catch (SQLException e){
+            System.out.println("Unable to process, please try again");
         }
     }
 

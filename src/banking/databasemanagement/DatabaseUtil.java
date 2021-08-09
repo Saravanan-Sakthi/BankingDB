@@ -15,7 +15,7 @@ public class DatabaseUtil{
     private static Connection connection = null;
     private static DatabaseUtil db = null;
 
-    private DatabaseUtil() {
+    private DatabaseUtil() throws SQLException {
         try {
             //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
@@ -25,34 +25,34 @@ public class DatabaseUtil{
         // e.printStackTrace();
         // }
         catch (SQLException e) {
-            e.printStackTrace();
+            throw e;
         }
     }
 
-    public static DatabaseUtil getObject() {
+    public static DatabaseUtil getObject() throws SQLException {
         if (db == null) {
             db = new DatabaseUtil();
         }
         return db;
     }
 
-    public static void closeConnection() {
+    public static void closeConnection() throws SQLException {
         if (connection != null) {
             try {
                 connection.close();
                 //System.out.println("Connection closed");
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw e;
             }
-        } else {
-            //System.out.println("No connection established");
         }
     }
 
-    public void downloadAccountRecord() {
+    public void downloadAccountRecord() throws SQLException {
+        Statement st=null;
+        ResultSet resSet=null;
         try {
-            Statement st = connection.createStatement();
-            ResultSet resSet = st.executeQuery("SELECT * FROM Accounts;");
+            st = connection.createStatement();
+            resSet = st.executeQuery("SELECT * FROM Accounts;");
             while (resSet.next()) {
                 Accounts detail = new Accounts();
                 detail.setCustomerID(resSet.getLong("Customer_ID"));
@@ -61,17 +61,19 @@ public class DatabaseUtil{
                 detail.setAccountBalance(resSet.getFloat("Account_Balance"));
                 DataRecord.getInstance().addAccountToMemory(detail);
             }
+        }
+        finally {
             resSet.close();
             st.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public void downloadCustomerRecord() {
+    public void downloadCustomerRecord() throws SQLException {
+        Statement st= null;
+        ResultSet resSet= null;
         try {
-            Statement st = connection.createStatement();
-            ResultSet resSet = st.executeQuery("SELECT * FROM Customers");
+            st = connection.createStatement();
+            resSet = st.executeQuery("SELECT * FROM Customers");
             while (resSet.next()) {
                 Customers detail = new Customers();
                 detail.setCustomerID(resSet.getLong("Customer_ID"));
@@ -81,63 +83,67 @@ public class DatabaseUtil{
                 detail.setCity(resSet.getString("City"));
                 DataRecord.getInstance().addCustomerToMemory(detail);
             }
+        }
+        finally{
             resSet.close();
             st.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public void uploadCustomer(ArrayList <ArrayList> dataList){
+    public void uploadCustomer(ArrayList <ArrayList> dataList) throws SQLException{
         for (int i=0;i<dataList.size();i++){
             ArrayList<Object> customerPlusAccount = dataList.get(i);
             uploadCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
         }
     }
 
-    public ArrayList<Object> uploadCustomer(Customers customerDetails, Accounts accountDetails) {
+    public ArrayList<Object> uploadCustomer(Customers customerDetails, Accounts accountDetails) throws SQLException {
         ArrayList<Object> customerPlusAccount = new ArrayList<>();
+        PreparedStatement st= null;
+        ResultSet resSet= null;
         try {
             String query="INSERT INTO Customers (Name,Email,City,Mobile) VALUES (?,?,?,?)";
-            PreparedStatement st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             st.setString(1, customerDetails.getName());
             st.setString(2, customerDetails.getEmail());
             st.setString(3, customerDetails.getCity());
             st.setLong(4, customerDetails.getMobile());
             st.executeUpdate();
-            ResultSet resSet = st.getGeneratedKeys();
+            resSet = st.getGeneratedKeys();
             resSet.next();
             long lastID= resSet.getLong(1);
-            resSet.close();
             customerDetails.setCustomerID(lastID);
             accountDetails.setCustomerID(lastID);
             customerPlusAccount.add(customerDetails);
             customerPlusAccount.add(accountDetails);
             uploadAccount(accountDetails);
+        }
+        finally {
+            resSet.close();
             st.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return customerPlusAccount;
     }
 
-    public Accounts uploadAccount(Accounts details) {
+    public Accounts uploadAccount(Accounts details) throws SQLException {
+        PreparedStatement st= null;
+        ResultSet resSet= null;
         try {
             String query="INSERT INTO Accounts (Customer_ID,Account_Balance,Branch) VALUES (?,?,?)";
-            PreparedStatement st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            st = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             st.setLong(1, details.getCustomerID());
             st.setFloat(2, details.getAccountBalance());
             st.setString(3, details.getBranch());
             st.executeUpdate();
-            ResultSet resSet = st.getGeneratedKeys();
+            resSet = st.getGeneratedKeys();
             resSet.next();
             long lastID= resSet.getLong(1);
-            resSet.close();
-            st.close();
             details.setAccountNumber(lastID);
             DataRecord.fetchedRecords=0;
-        } catch (SQLException e) {
-            System.out.println(e);
+        }
+        finally {
+            resSet.close();
+            st.close();
         }
         return details;
     }
