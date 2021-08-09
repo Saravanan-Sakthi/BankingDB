@@ -1,13 +1,11 @@
 package banking;
 
-import banking.databasemanagement.DatabaseUtil;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
+import banking.details.SingleUse;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -41,20 +39,19 @@ public class AccountManagement {
     }
 
     public void existingCustomer() throws SQLException {
-        DataRecord.getInstance().fetchData();
         try {
             Accounts accountDetails = new Accounts();
             System.out.print("Enter your Customer ID: ");
             long customerID=scan.nextLong();
-            if (DataRecord.getInstance().checkCustomer(customerID)) {
+            if (SingleUse.object.engine.checkCustomer(customerID)) {
                 accountDetails.setCustomerID(customerID);
                 System.out.print("Enter the initial deposit: ");
                 accountDetails.setAccountBalance(scan.nextInt());
                 scan.nextLine();
                 System.out.print("Enter the branch: ");
                 accountDetails.setBranch(scan.nextLine());
-                Accounts addedInfo= DatabaseUtil.getObject().uploadAccount(accountDetails);
-                System.out.println("New account created\n"+ addedInfo+"\n");
+                SingleUse.object.engine.uploadAccount(accountDetails);
+                System.out.println("New account created\n"+ accountDetails+"\n");
             }
             else {
                 System.out.println("Invalid Customer ID");
@@ -67,7 +64,6 @@ public class AccountManagement {
     }
 
     public void newCustomer() throws SQLException{
-        DataRecord.getInstance().fetchData();
         try {
             System.out.print("Enter your name: ");
             String name= scan.nextLine();
@@ -89,11 +85,12 @@ public class AccountManagement {
             Customers customerDetails = DataRecord.getCustomerObject(name, email, mobile, city);
             Accounts accountDetails = DataRecord.getAccountObject(accountBalance, branch);
             if(access==1){
-                ArrayList addedInfo = DatabaseUtil.getObject().uploadCustomer(customerDetails,accountDetails);
-                System.out.println(addedInfo);
+                SingleUse.object.engine.uploadCustomer(customerDetails,accountDetails, true);
+                System.out.println(customerDetails);
+                System.out.println(accountDetails);
             }
             else if (access ==2) {
-                DataRecord.getInstance().addToTempList(customerDetails, accountDetails);
+                SingleUse.object.engine.uploadCustomer(customerDetails,accountDetails);
             }
             else {
                 System.out.println("Invalid input");
@@ -106,67 +103,29 @@ public class AccountManagement {
     }
 
     public void viewData() {
-        try {
-            DataRecord.getInstance().updatePresent();
-            DataRecord.getInstance().fetchData();
-            while (true) {
-                try {
-                    System.out.print("1. Account Details\n2. Customer Details\n3. Exit\nEnter the option: ");
-                    int option = scan.nextInt();
-                    if (option == 3) {
-                        break;
-                    }
-                    System.out.print("Enter your customer ID: ");
-                    long customerID = scan.nextLong();
-                    if (option == 1) {
-                        System.out.print("Enter your Account Number : ");
-                        long accountNumber = scan.nextLong();
-                        scan.nextLine();
-                        viewAccountData(customerID, accountNumber);
-                    } else if (option == 2) {
-                        viewCustomerData(customerID);
-                    } else {
-                        System.out.println("Invalid input\n");
-                    }
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid input try again");
+        while (true) {
+            try {
+                System.out.print("1. Account Details\n2. Customer Details\n3. Exit\nEnter the option: ");
+                int option = scan.nextInt();
+                if (option == 3) {
+                    break;
                 }
+                System.out.print("Enter your customer ID: ");
+                long customerID = scan.nextLong();
+                if (option == 1) {
+                    System.out.print("Enter your Account Number : ");
+                    long accountNumber = scan.nextLong();
+                    scan.nextLine();
+                    System.out.println(SingleUse.object.engine.downloadAccount(customerID,accountNumber));
+                } else if (option == 2) {
+                    System.out.println(SingleUse.object.engine.downloadCustomer(customerID));
+                    System.out.println(SingleUse.object.engine.downloadAccount(customerID));
+                } else {
+                    System.out.println("Invalid input\n");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input try again");
             }
-        }
-        catch (SQLException e){
-            System.out.println("Unable to process, please try again");
-        }
-    }
-
-    void viewCustomerData(long customerID) {
-        HashMap<Long,Customers> customerDetails = DataRecord.getInstance().getCustomerDetails();
-        HashMap <Long,HashMap<Long,Accounts>> accountDetails  = DataRecord.getInstance().getAccountDetails();
-        if (customerDetails.containsKey(customerID)) {
-            System.out.print(customerDetails.get(customerID) + "\n");
-            HashMap<Long, Accounts> accountMap = accountDetails.get(customerID);
-            for (Accounts detail : accountMap.values()) {
-                System.out.print(detail);
-            }
-        } else {
-            System.out.println("No details available");
-        }
-    }
-
-    void viewAccountData(long customerID, long accountNumber) {
-        HashMap<Long,Customers> customerDetails = DataRecord.getInstance().getCustomerDetails();
-        HashMap<Long,HashMap<Long,Accounts>> accountDetails = DataRecord.getInstance().getAccountDetails();
-        if (customerDetails.containsKey(customerID)) {
-            System.out.print(customerDetails.get(customerID) + "\n");
-            HashMap<Long, Accounts> accountMap =  accountDetails.get(customerID);
-            Accounts info= accountMap.get(accountNumber);
-            if(info !=null){
-                System.out.print(info);
-            }
-            else {
-                System.out.print("Account number may be wrong try again\n");
-            }
-        } else {
-            System.out.println("No details available");
         }
     }
 }

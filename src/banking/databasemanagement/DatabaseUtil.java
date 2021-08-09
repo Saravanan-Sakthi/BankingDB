@@ -15,39 +15,26 @@ public class DatabaseUtil{
     private static Connection connection = null;
     private static DatabaseUtil db = null;
 
-    private DatabaseUtil() throws SQLException {
-        try {
-            //Class.forName("com.mysql.jdbc.Driver");
+    public DatabaseUtil() {
+        try {//Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
             //System.out.println("connection established");
+            //catch( ClassNotFoundException e){
+            // e.printStackTrace();
+            // }
         }
-        //catch( ClassNotFoundException e){
-        // e.printStackTrace();
-        // }
-        catch (SQLException e) {
-            throw e;
+        catch(SQLException e){
         }
-    }
-
-    public static DatabaseUtil getObject() throws SQLException {
-        if (db == null) {
-            db = new DatabaseUtil();
-        }
-        return db;
     }
 
     public static void closeConnection() throws SQLException {
         if (connection != null) {
-            try {
-                connection.close();
-                //System.out.println("Connection closed");
-            } catch (SQLException e) {
-                throw e;
-            }
+            connection.close();
         }
     }
 
-    public void downloadAccountRecord() throws SQLException {
+    public ArrayList<Accounts> downloadAccountRecord() throws SQLException {
+        ArrayList<Accounts> returnAccount= new ArrayList<>();
         Statement st=null;
         ResultSet resSet=null;
         try {
@@ -59,16 +46,18 @@ public class DatabaseUtil{
                 detail.setAccountNumber(resSet.getLong("Account_number"));
                 detail.setBranch(resSet.getString("Branch"));
                 detail.setAccountBalance(resSet.getFloat("Account_Balance"));
-                DataRecord.getInstance().addAccountToMemory(detail);
+                returnAccount.add(detail);
             }
         }
         finally {
             resSet.close();
             st.close();
         }
+        return returnAccount;
     }
 
-    public void downloadCustomerRecord() throws SQLException {
+    public ArrayList<Customers> downloadCustomerRecord() throws SQLException {
+        ArrayList<Customers> returnCustomer= new ArrayList<>();
         Statement st= null;
         ResultSet resSet= null;
         try {
@@ -81,18 +70,19 @@ public class DatabaseUtil{
                 detail.setEmail(resSet.getString("Email"));
                 detail.setMobile(resSet.getLong("Mobile"));
                 detail.setCity(resSet.getString("City"));
-                DataRecord.getInstance().addCustomerToMemory(detail);
+                returnCustomer.add(detail);
             }
         }
         finally{
+            assert resSet != null;
             resSet.close();
             st.close();
         }
+        return returnCustomer;
     }
 
     public void uploadCustomer(ArrayList <ArrayList> dataList) throws SQLException{
-        for (int i=0;i<dataList.size();i++){
-            ArrayList<Object> customerPlusAccount = dataList.get(i);
+        for (ArrayList<Object> customerPlusAccount : dataList) {
             uploadCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
         }
     }
@@ -125,7 +115,7 @@ public class DatabaseUtil{
         return customerPlusAccount;
     }
 
-    public Accounts uploadAccount(Accounts details) throws SQLException {
+    public void uploadAccount(Accounts details) throws SQLException {
         PreparedStatement st= null;
         ResultSet resSet= null;
         try {
@@ -139,12 +129,10 @@ public class DatabaseUtil{
             resSet.next();
             long lastID= resSet.getLong(1);
             details.setAccountNumber(lastID);
-            DataRecord.fetchedRecords=0;
         }
         finally {
             resSet.close();
             st.close();
         }
-        return details;
     }
 }

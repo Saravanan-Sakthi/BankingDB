@@ -1,6 +1,6 @@
 package banking;
 
-import banking.databasemanagement.DatabaseUtil;
+import banking.details.SingleUse;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -18,7 +18,7 @@ public class BankingDriver {
                 } else if (option == 2) {
                     new AccountManagement().viewData();
                 } else if (option == 3) {
-                    DatabaseUtil.closeConnection();
+                    SingleUse.object.engine.closeConnection();
                     break;
                 } else {
                     System.out.println("Invalid input\n");
