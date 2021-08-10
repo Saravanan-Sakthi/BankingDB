@@ -35,11 +35,18 @@ public enum BankingEngine {
                 Customers customerInfo = uploadCustomer((Customers) customerPlusAccount.get(0));
                 Accounts accountInfo = (Accounts) customerPlusAccount.get(1);
                 accountInfo.setCustomerID(customerInfo.getCustomerID());
-                accountInfo = uploadAccount(accountInfo);
-                uploadedData.add(customerInfo);
-                uploadedData.add(accountInfo);
-                ArrayList<ArrayList<Object>> addedList = returningMap.get("Success");
-                addedList.add(uploadedData);
+                try {
+                    accountInfo = uploadAccount(accountInfo);
+                    uploadedData.add(customerInfo);
+                    uploadedData.add(accountInfo);
+                    ArrayList<ArrayList<Object>> addedList = returningMap.get("Success");
+                    addedList.add(uploadedData);
+                }
+                catch(SQLException e){
+                    deleteCustomer(accountInfo.getCustomerID());
+                    ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
+                    failedList.add(customerPlusAccount);
+                }
             }
             catch (SQLException e) {
                 ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
@@ -49,7 +56,11 @@ public enum BankingEngine {
         return returningMap;
     }
 
-    public Customers uploadCustomer(Customers customerInfo) throws SQLException {
+    private void deleteCustomer(long customerID) throws SQLException{
+         DatabaseUtil.INSTANCE.deleteCustomer(customerID);
+    }
+
+    private Customers uploadCustomer(Customers customerInfo) throws SQLException {
         long customerID= DatabaseUtil.INSTANCE.uploadCustomer(customerInfo);
         customerInfo.setCustomerID(customerID);
         DataRecord.INSTANCE.addCustomerToMemory(customerInfo);
@@ -84,8 +95,7 @@ public enum BankingEngine {
     }
 
     public Accounts downloadAccount(long customerID, long accountNumber){
-        HashMap<Long , HashMap<Long, Accounts>> accountsMap= DataRecord.INSTANCE.getAccountDetails();
-        HashMap<Long, Accounts> individualAccounts= accountsMap.get(customerID);
+        HashMap<Long, Accounts> individualAccounts= downloadAccount(customerID);
         return individualAccounts.get(accountNumber);
     }
 
@@ -105,6 +115,29 @@ public enum BankingEngine {
         catch(SQLException e){
 
         }
+    }
+
+    public Customers getCustomerObject(String name, String email, long mobile, String city){
+        Customers object= new Customers();
+        object.setCity(city);
+        object.setEmail(email);
+        object.setMobile(mobile);
+        object.setName(name);
+        return object;
+    }
+
+    public Accounts getAccountObject(float accountBalance, String branch){
+        return getAccountObject(-1,accountBalance,branch);
+    }
+
+    public Accounts getAccountObject(long customerID, float accountBalance, String branch){
+        Accounts object= new Accounts();
+        if(customerID!=-1) {
+            object.setCustomerID(customerID);
+        }
+        object.setAccountBalance(accountBalance);
+        object.setBranch(branch);
+        return object;
     }
 
 }

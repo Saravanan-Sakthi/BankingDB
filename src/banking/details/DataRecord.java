@@ -41,27 +41,4 @@ public enum DataRecord {
     }
 
 
-    public static Customers getCustomerObject(String name, String email, long mobile, String city){
-        Customers object= new Customers();
-        object.setCity(city);
-        object.setEmail(email);
-        object.setMobile(mobile);
-        object.setName(name);
-        return object;
-    }
-
-    public static Accounts getAccountObject(float accountBalance, String branch){
-        return getAccountObject(-1,accountBalance,branch);
-    }
-
-    public static Accounts getAccountObject(long customerID, float accountBalance, String branch){
-        Accounts object= new Accounts();
-        if(customerID!=-1) {
-            object.setCustomerID(customerID);
-        }
-        object.setAccountBalance(accountBalance);
-        object.setBranch(branch);
-        return object;
-    }
-
 }

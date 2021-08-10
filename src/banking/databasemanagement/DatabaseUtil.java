@@ -142,4 +142,20 @@ public enum DatabaseUtil{
         }
         return accountNumber;
     }
+
+    public void deleteCustomer(long customerID) throws SQLException {
+        PreparedStatement st= null;
+        try {
+            String query="DELETE FROM `Customers` WHERE (`Customer_ID` = ?);";
+            st = connection.prepareStatement(query);
+            st.setLong(1, customerID);
+            st.execute();
+        }
+        finally {
+            try {
+                st.close();
+            } catch (Exception e) {
+            }
+        }
+    }
 }

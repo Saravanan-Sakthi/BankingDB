@@ -6,8 +6,8 @@ import java.util.Scanner;
 public class BankingDriver {
     private static Scanner scan = new Scanner(System.in);
 
-    public static void main(String[] args) throws Exception{
-        while (true) {
+    public static void main(String[] args){
+       while (true) {
             System.out.print("1. Create Account\n2. View details\n3. Exit\nEnter the option: ");
             try {
                 int option = scan.nextInt();

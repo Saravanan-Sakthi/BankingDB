@@ -61,7 +61,7 @@ public class AccountManagement {
             scan.nextLine();
             System.out.print("Enter the branch: ");
             String branch= scan.nextLine();
-            Accounts accountDetails = DataRecord.getAccountObject(customerID,accountBalance, branch);
+            Accounts accountDetails = BankingEngine.INSTANCE.getAccountObject(customerID,accountBalance, branch);
             Accounts accountInfo = BankingEngine.INSTANCE.uploadAccount(accountDetails);
             System.out.println("New account created\n"+ accountInfo+"\n");
         }
@@ -90,8 +90,8 @@ public class AccountManagement {
                 System.out.print("Enter the branch: ");
                 String branch = scan.nextLine();
 
-                Customers customerDetails = DataRecord.getCustomerObject(name, email, mobile, city);
-                Accounts accountDetails = DataRecord.getAccountObject(accountBalance, branch);
+                Customers customerDetails = BankingEngine.INSTANCE.getCustomerObject(name, email, mobile, city);
+                Accounts accountDetails = BankingEngine.INSTANCE.getAccountObject(accountBalance, branch);
 
                 ArrayList<Object> customerPlusAccount =new ArrayList<>();
                 customerPlusAccount.add(customerDetails);
