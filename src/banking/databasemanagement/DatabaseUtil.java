@@ -2,7 +2,7 @@ package banking.databasemanagement;
 
 import banking.details.Accounts;
 import banking.details.Customers;
-import banking.details.DataRecord;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -11,23 +11,24 @@ import java.sql.PreparedStatement;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 
-public class DatabaseUtil{
-    private static Connection connection = null;
-    private static DatabaseUtil db = null;
+public enum DatabaseUtil{
+    INSTANCE;
+    private Connection connection = null;
+    private static DatabaseUtil db= null;
 
-    public DatabaseUtil() {
-        try {//Class.forName("com.mysql.jdbc.Driver");
+    private DatabaseUtil() {
+        try {
+            //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
-            //System.out.println("connection established");
             //catch( ClassNotFoundException e){
             // e.printStackTrace();
             // }
         }
         catch(SQLException e){
+            e.printStackTrace();
         }
     }
-
-    public static void closeConnection() throws SQLException {
+    public void closeConnection() throws SQLException {
         if (connection != null) {
             connection.close();
         }
@@ -50,8 +51,16 @@ public class DatabaseUtil{
             }
         }
         finally {
-            resSet.close();
-            st.close();
+            try {
+                if (resSet != null) {
+                    resSet.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+            catch(SQLException e){
+            }
         }
         return returnAccount;
     }
@@ -81,14 +90,8 @@ public class DatabaseUtil{
         return returnCustomer;
     }
 
-    public void uploadCustomer(ArrayList <ArrayList> dataList) throws SQLException{
-        for (ArrayList<Object> customerPlusAccount : dataList) {
-            uploadCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1));
-        }
-    }
-
-    public ArrayList<Object> uploadCustomer(Customers customerDetails, Accounts accountDetails) throws SQLException {
-        ArrayList<Object> customerPlusAccount = new ArrayList<>();
+    public long uploadCustomer(Customers customerDetails) throws SQLException {
+        long customerID=0;
         PreparedStatement st= null;
         ResultSet resSet= null;
         try {
@@ -101,21 +104,21 @@ public class DatabaseUtil{
             st.executeUpdate();
             resSet = st.getGeneratedKeys();
             resSet.next();
-            long lastID= resSet.getLong(1);
-            customerDetails.setCustomerID(lastID);
-            accountDetails.setCustomerID(lastID);
-            customerPlusAccount.add(customerDetails);
-            customerPlusAccount.add(accountDetails);
-            uploadAccount(accountDetails);
+            customerID= resSet.getLong(1);
         }
         finally {
-            resSet.close();
-            st.close();
+            try {
+                resSet.close();
+                st.close();
+            }
+            catch(Exception e){
+            }
         }
-        return customerPlusAccount;
+        return customerID;
     }
 
-    public void uploadAccount(Accounts details) throws SQLException {
+    public long uploadAccount(Accounts details) throws SQLException {
+        long accountNumber=0;
         PreparedStatement st= null;
         ResultSet resSet= null;
         try {
@@ -127,12 +130,16 @@ public class DatabaseUtil{
             st.executeUpdate();
             resSet = st.getGeneratedKeys();
             resSet.next();
-            long lastID= resSet.getLong(1);
-            details.setAccountNumber(lastID);
+            accountNumber= resSet.getLong(1);
         }
         finally {
-            resSet.close();
-            st.close();
+            try {
+                resSet.close();
+                st.close();
+            }
+            catch (Exception e){
+            }
         }
+        return accountNumber;
     }
 }

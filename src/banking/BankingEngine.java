@@ -4,20 +4,18 @@ import banking.databasemanagement.DatabaseUtil;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
-import banking.details.SingleUse;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class BankingEngine {
+public enum BankingEngine {
+    INSTANCE;
 
-    private static int bunchUploadLimit=3;
     private ArrayList<ArrayList> tempList = new ArrayList<>();
 
-    public BankingEngine() {
+     BankingEngine() {
         try {
-            System.out.println("Refilling");
             refillAccountCache();
             refillCustomerCache();
         }
@@ -25,81 +23,84 @@ public class BankingEngine {
         }
     }
 
-    public void uploadCustomer(Customers customerInfo, Accounts accountInfo) throws SQLException{
-        ArrayList<Object> customerPlusAccount = new ArrayList<>();
-        customerPlusAccount.add(customerInfo);
-        customerPlusAccount.add(accountInfo);
-        tempList.add(customerPlusAccount);
-        if (tempList.size()>bunchUploadLimit){
-            emptyTempList();
-        }
-    }
-
-    public void uploadCustomer(Customers customerInfo, Accounts accountInfo, boolean quickAccess) throws SQLException {
-        if(quickAccess){
-            SingleUse.object.db.uploadCustomer(customerInfo, accountInfo);
-            SingleUse.object.record.addCustomerToMemory(customerInfo);
-        }
-        else{
-            uploadCustomer(customerInfo, accountInfo);
-        }
-    }
-
-    public void emptyTempList() throws SQLException{
-        if (tempList.size()!=0) {
-            for (ArrayList<Object> customerPlusAccount : tempList){
-                uploadCustomer((Customers) customerPlusAccount.get(0), (Accounts) customerPlusAccount.get(1),true);
+    public HashMap<String, ArrayList<ArrayList<Object>>> uploadCustomer(ArrayList<ArrayList<Object>> bunchList){
+        HashMap<String, ArrayList<ArrayList<Object>>> returningMap = new HashMap<>();
+        ArrayList<ArrayList<Object>> success = new ArrayList<>();
+        ArrayList<ArrayList<Object>> failure = new ArrayList<>();
+        returningMap.put("Success", success);
+        returningMap.put("Failure", failure);
+        for (ArrayList<Object> customerPlusAccount : bunchList){
+            try {
+                ArrayList<Object> uploadedData = new ArrayList<>();
+                Customers customerInfo = uploadCustomer((Customers) customerPlusAccount.get(0));
+                Accounts accountInfo = (Accounts) customerPlusAccount.get(1);
+                accountInfo.setCustomerID(customerInfo.getCustomerID());
+                accountInfo = uploadAccount(accountInfo);
+                uploadedData.add(customerInfo);
+                uploadedData.add(accountInfo);
+                ArrayList<ArrayList<Object>> addedList = returningMap.get("Success");
+                addedList.add(uploadedData);
             }
-            tempList.clear();
+            catch (SQLException e) {
+                ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
+                failedList.add(customerPlusAccount);
+            }
         }
+        return returningMap;
     }
 
-    public void uploadAccount(Accounts accountInfo) throws SQLException{
-        SingleUse.object.db.uploadAccount(accountInfo);
-        SingleUse.object.record.addAccountToMemory(accountInfo);
+    public Customers uploadCustomer(Customers customerInfo) throws SQLException {
+        long customerID= DatabaseUtil.INSTANCE.uploadCustomer(customerInfo);
+        customerInfo.setCustomerID(customerID);
+        DataRecord.INSTANCE.addCustomerToMemory(customerInfo);
+        return customerInfo;
+    }
+
+    public Accounts uploadAccount(Accounts accountInfo) throws SQLException{
+        long accountNumber= DatabaseUtil.INSTANCE.uploadAccount(accountInfo);
+        accountInfo.setAccountNumber(accountNumber);
+        //need to set accid here- done
+        DataRecord.INSTANCE.addAccountToMemory(accountInfo);
+        return accountInfo;
     }
 
     public void refillCustomerCache() throws SQLException{
-        ArrayList<Customers> customerList = SingleUse.object.db.downloadCustomerRecord();
+        ArrayList<Customers> customerList = DatabaseUtil.INSTANCE.downloadCustomerRecord();
         for (Customers details:customerList){
-            SingleUse.object.record.addCustomerToMemory(details);
+            DataRecord.INSTANCE.addCustomerToMemory(details);
         }
     }
 
     public void refillAccountCache() throws SQLException{
-        ArrayList<Accounts> accountList = SingleUse.object.db.downloadAccountRecord();
+        ArrayList<Accounts> accountList = DatabaseUtil.INSTANCE.downloadAccountRecord();
         for (Accounts details:accountList){
-            SingleUse.object.record.addAccountToMemory(details);
+            DataRecord.INSTANCE.addAccountToMemory(details);
         }
     }
 
     public Customers downloadCustomer(long customerID){
-        HashMap<Long, Customers> customersMap =SingleUse.object.record.getCustomerDetails();
+        HashMap<Long, Customers> customersMap =DataRecord.INSTANCE.getCustomerDetails();
         return customersMap.get(customerID);
     }
 
     public Accounts downloadAccount(long customerID, long accountNumber){
-        HashMap<Long , HashMap<Long, Accounts>> accountsMap= SingleUse.object.record.getAccountDetails();
+        HashMap<Long , HashMap<Long, Accounts>> accountsMap= DataRecord.INSTANCE.getAccountDetails();
         HashMap<Long, Accounts> individualAccounts= accountsMap.get(customerID);
         return individualAccounts.get(accountNumber);
     }
 
     public HashMap<Long, Accounts> downloadAccount(long customerID){
-        HashMap<Long , HashMap<Long, Accounts>> accountsMap= SingleUse.object.record.getAccountDetails();
+        HashMap<Long , HashMap<Long, Accounts>> accountsMap=DataRecord.INSTANCE.getAccountDetails();
         return accountsMap.get(customerID);
     }
 
-    public void setBunchUploadLimit(int bunchUploadLimit){
-        BankingEngine.bunchUploadLimit=bunchUploadLimit;
-    }
-
     public boolean checkCustomer(long customerID){
-        return SingleUse.object.record.checkCustomer(customerID);
+        return DataRecord.INSTANCE.checkCustomer(customerID);
     }
 
     public static void closeConnection(){
         try {
-            DatabaseUtil.closeConnection();
+            DatabaseUtil.INSTANCE.closeConnection();
         }
         catch(SQLException e){
 

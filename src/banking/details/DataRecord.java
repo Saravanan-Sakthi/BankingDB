@@ -2,8 +2,9 @@ package banking.details;
 
 import java.util.HashMap;
 
-public class DataRecord {
+public enum DataRecord {
 
+    INSTANCE;
     private HashMap<Long, HashMap<Long,Accounts>> accountDetails = new HashMap<>();  // Nested HashMap for storing multiple account info of individual customers
     private HashMap<Long, Customers> customerDetails = new HashMap<>();  // HashMap for accessing customer info alone
 
@@ -13,16 +14,16 @@ public class DataRecord {
 
     public void addAccountToMemory(Accounts detail) {  // To fetch account info from DB to local memory
         HashMap<Long, Accounts> accountDetails = this.accountDetails.get(detail.getCustomerID());
-        if (accountDetails != null) {  // Checks the customer ID whether it is present in the accounts record
-            accountDetails.put(detail.getAccountNumber(), detail);
-        } else {  // if the given account's customer ID is not present in the record new HashMap is created and stored as a new customer.
+        if(accountDetails== null){
             accountDetails = new HashMap<>();
-            accountDetails.put(detail.getAccountNumber(), detail);
             this.accountDetails.put(detail.getCustomerID(), accountDetails);
         }
+        accountDetails.put(detail.getAccountNumber(), detail);
+
     }
 
     public HashMap<Long,HashMap<Long,Accounts>> getAccountDetails() {
+        System.out.println("getAccount");
         return this.accountDetails;
     }
 
@@ -50,7 +51,14 @@ public class DataRecord {
     }
 
     public static Accounts getAccountObject(float accountBalance, String branch){
+        return getAccountObject(-1,accountBalance,branch);
+    }
+
+    public static Accounts getAccountObject(long customerID, float accountBalance, String branch){
         Accounts object= new Accounts();
+        if(customerID!=-1) {
+            object.setCustomerID(customerID);
+        }
         object.setAccountBalance(accountBalance);
         object.setBranch(branch);
         return object;

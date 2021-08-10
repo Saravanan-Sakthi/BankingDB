@@ -3,14 +3,20 @@ package banking;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
-import banking.details.SingleUse;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class AccountManagement {
-    public static Scanner scan = BankingDriver.scan;
+    private static Scanner scan;
+
+    public AccountManagement(Scanner scan) {
+        this.scan=scan;
+    }
+
     public void createData() {
         try {
             while (true) {
@@ -25,7 +31,10 @@ public class AccountManagement {
                 if (option == 1) {
                     existingCustomer();
                 } else if (option == 2) {
-                    newCustomer();
+                    System.out.print("Enter the number of customers : ");
+                    int num= scan.nextInt();
+                    scan.nextLine();
+                    newCustomer(num);
                 } else if (option == 3) {
                     break;
                 } else {
@@ -40,22 +49,21 @@ public class AccountManagement {
 
     public void existingCustomer() throws SQLException {
         try {
-            Accounts accountDetails = new Accounts();
+            //remove thirupur code
             System.out.print("Enter your Customer ID: ");
             long customerID=scan.nextLong();
-            if (SingleUse.object.engine.checkCustomer(customerID)) {
-                accountDetails.setCustomerID(customerID);
-                System.out.print("Enter the initial deposit: ");
-                accountDetails.setAccountBalance(scan.nextInt());
-                scan.nextLine();
-                System.out.print("Enter the branch: ");
-                accountDetails.setBranch(scan.nextLine());
-                SingleUse.object.engine.uploadAccount(accountDetails);
-                System.out.println("New account created\n"+ accountDetails+"\n");
-            }
-            else {
+            if (! BankingEngine.INSTANCE.checkCustomer(customerID)) {
                 System.out.println("Invalid Customer ID");
+                return;
             }
+            System.out.print("Enter the initial deposit: ");
+            long accountBalance= scan.nextInt();
+            scan.nextLine();
+            System.out.print("Enter the branch: ");
+            String branch= scan.nextLine();
+            Accounts accountDetails = DataRecord.getAccountObject(customerID,accountBalance, branch);
+            Accounts accountInfo = BankingEngine.INSTANCE.uploadAccount(accountDetails);
+            System.out.println("New account created\n"+ accountInfo+"\n");
         }
         catch(InputMismatchException e){
             scan.nextLine();
@@ -63,38 +71,39 @@ public class AccountManagement {
         }
     }
 
-    public void newCustomer() throws SQLException{
+    public void newCustomer(int num) throws SQLException{
+        ArrayList<ArrayList<Object>> bunchList = new ArrayList<>();
         try {
-            System.out.print("Enter your name: ");
-            String name= scan.nextLine();
-            System.out.print("Enter your Email ID: ");
-            String email=scan.nextLine();
-            System.out.print("Enter your Mobile number: ");
-            long mobile=scan.nextLong();
-            scan.nextLine();
-            System.out.print("Enter your city: ");
-            String city=scan.nextLine();
-            System.out.print("Enter the initial deposit: ");
-            float accountBalance=scan.nextFloat();
-            scan.nextLine();
-            System.out.print("Enter the branch: ");
-            String branch=scan.nextLine();
-            System.out.print("1. Quick access\n2. Normal access\nEnter the option : ");
-            int access=scan.nextInt();
-            scan.nextLine();
-            Customers customerDetails = DataRecord.getCustomerObject(name, email, mobile, city);
-            Accounts accountDetails = DataRecord.getAccountObject(accountBalance, branch);
-            if(access==1){
-                SingleUse.object.engine.uploadCustomer(customerDetails,accountDetails, true);
-                System.out.println(customerDetails);
-                System.out.println(accountDetails);
+            while(num-->0) {
+                System.out.print("Enter your name: ");
+                String name = scan.nextLine();
+                System.out.print("Enter your Email ID: ");
+                String email = scan.nextLine();
+                System.out.print("Enter your Mobile number: ");
+                long mobile = scan.nextLong();
+                scan.nextLine();
+                System.out.print("Enter your city: ");
+                String city = scan.nextLine();
+                System.out.print("Enter the initial deposit: ");
+                float accountBalance = scan.nextFloat();
+                scan.nextLine();
+                System.out.print("Enter the branch: ");
+                String branch = scan.nextLine();
+
+                Customers customerDetails = DataRecord.getCustomerObject(name, email, mobile, city);
+                Accounts accountDetails = DataRecord.getAccountObject(accountBalance, branch);
+
+                ArrayList<Object> customerPlusAccount =new ArrayList<>();
+                customerPlusAccount.add(customerDetails);
+                customerPlusAccount.add(accountDetails);
+                bunchList.add(customerPlusAccount);
+
+                HashMap<String, ArrayList<ArrayList<Object>>> uploadedData = BankingEngine.INSTANCE.uploadCustomer(bunchList);
+
+                System.out.println("Upload result ");
+                System.out.println(uploadedData);
             }
-            else if (access ==2) {
-                SingleUse.object.engine.uploadCustomer(customerDetails,accountDetails);
-            }
-            else {
-                System.out.println("Invalid input");
-            }
+
         }
         catch(InputMismatchException e){
             scan.nextLine();
@@ -116,10 +125,10 @@ public class AccountManagement {
                     System.out.print("Enter your Account Number : ");
                     long accountNumber = scan.nextLong();
                     scan.nextLine();
-                    System.out.println(SingleUse.object.engine.downloadAccount(customerID,accountNumber));
+                    System.out.println(BankingEngine.INSTANCE.downloadAccount(customerID,accountNumber));
                 } else if (option == 2) {
-                    System.out.println(SingleUse.object.engine.downloadCustomer(customerID));
-                    System.out.println(SingleUse.object.engine.downloadAccount(customerID));
+                    System.out.println(BankingEngine.INSTANCE.downloadCustomer(customerID));
+                    System.out.println(BankingEngine.INSTANCE.downloadAccount(customerID));
                 } else {
                     System.out.println("Invalid input\n");
                 }

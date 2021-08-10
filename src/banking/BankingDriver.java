@@ -1,24 +1,23 @@
 package banking;
 
-import banking.details.SingleUse;
-
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class BankingDriver {
-    public static Scanner scan = new Scanner(System.in);
+    private static Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) throws Exception{
         while (true) {
             System.out.print("1. Create Account\n2. View details\n3. Exit\nEnter the option: ");
             try {
                 int option = scan.nextInt();
+                AccountManagement acm = new AccountManagement(scan);
                 if (option == 1) {
-                    new AccountManagement().createData();
+                    acm.createData();
                 } else if (option == 2) {
-                    new AccountManagement().viewData();
+                    acm.viewData();
                 } else if (option == 3) {
-                    SingleUse.object.engine.closeConnection();
+                    BankingEngine.INSTANCE.closeConnection();
                     break;
                 } else {
                     System.out.println("Invalid input\n");
