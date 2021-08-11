@@ -2,6 +2,7 @@ package banking.databasemanagement;
 
 import banking.details.Accounts;
 import banking.details.Customers;
+import banking.details.Persistence;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,13 +11,12 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.List;
 
-public enum DatabaseUtil{
-    INSTANCE;
+public class DatabaseUtil implements Persistence {
     private Connection connection = null;
-    private static DatabaseUtil db= null;
 
-    private DatabaseUtil() {
+    public DatabaseUtil() {
         try {
             //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
@@ -28,19 +28,15 @@ public enum DatabaseUtil{
             e.printStackTrace();
         }
     }
-    public void closeConnection() throws SQLException {
+    public void cleanup() throws Exception {
         if (connection != null) {
             connection.close();
         }
     }
 
-    public ArrayList<Accounts> downloadAccountRecord() throws SQLException {
+    public List<Accounts> downloadAccountRecord() throws SQLException {
         ArrayList<Accounts> returnAccount= new ArrayList<>();
-        Statement st=null;
-        ResultSet resSet=null;
-        try {
-            st = connection.createStatement();
-            resSet = st.executeQuery("SELECT * FROM Accounts;");
+        try (Statement st = connection.createStatement(); ResultSet resSet = st.executeQuery("SELECT * FROM Accounts;")) {
             while (resSet.next()) {
                 Accounts detail = new Accounts();
                 detail.setCustomerID(resSet.getLong("Customer_ID"));
@@ -50,22 +46,10 @@ public enum DatabaseUtil{
                 returnAccount.add(detail);
             }
         }
-        finally {
-            try {
-                if (resSet != null) {
-                    resSet.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-            }
-            catch(SQLException e){
-            }
-        }
         return returnAccount;
     }
 
-    public ArrayList<Customers> downloadCustomerRecord() throws SQLException {
+    public List<Customers> downloadCustomerRecord() throws SQLException {
         ArrayList<Customers> returnCustomer= new ArrayList<>();
         Statement st= null;
         ResultSet resSet= null;
@@ -83,15 +67,18 @@ public enum DatabaseUtil{
             }
         }
         finally{
-            assert resSet != null;
-            resSet.close();
-            st.close();
+            try {
+                resSet.close();
+                st.close();
+            }
+            catch (Exception e){
+            }
         }
         return returnCustomer;
     }
 
     public long uploadCustomer(Customers customerDetails) throws SQLException {
-        long customerID=0;
+        long customerID;
         PreparedStatement st= null;
         ResultSet resSet= null;
         try {
@@ -118,7 +105,7 @@ public enum DatabaseUtil{
     }
 
     public long uploadAccount(Accounts details) throws SQLException {
-        long accountNumber=0;
+        long accountNumber;
         PreparedStatement st= null;
         ResultSet resSet= null;
         try {
@@ -143,13 +130,15 @@ public enum DatabaseUtil{
         return accountNumber;
     }
 
-    public void deleteCustomer(long customerID) throws SQLException {
+    public boolean deleteCustomer(long customerID) throws SQLException {
         PreparedStatement st= null;
+        boolean status;
         try {
             String query="DELETE FROM `Customers` WHERE (`Customer_ID` = ?);";
             st = connection.prepareStatement(query);
             st.setLong(1, customerID);
             st.execute();
+            status = true;
         }
         finally {
             try {
@@ -157,5 +146,6 @@ public enum DatabaseUtil{
             } catch (Exception e) {
             }
         }
+        return status;
     }
 }

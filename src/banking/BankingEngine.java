@@ -4,22 +4,21 @@ import banking.databasemanagement.DatabaseUtil;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
+import banking.details.Persistence;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public enum BankingEngine {
     INSTANCE;
-
-    private ArrayList<ArrayList> tempList = new ArrayList<>();
+    private final Persistence db=new DatabaseUtil();
 
      BankingEngine() {
         try {
             refillAccountCache();
             refillCustomerCache();
         }
-        catch (SQLException e){
+        catch (Exception e){
         }
     }
 
@@ -42,13 +41,13 @@ public enum BankingEngine {
                     ArrayList<ArrayList<Object>> addedList = returningMap.get("Success");
                     addedList.add(uploadedData);
                 }
-                catch(SQLException e){
+                catch(Exception e){
                     deleteCustomer(accountInfo.getCustomerID());
                     ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
                     failedList.add(customerPlusAccount);
                 }
             }
-            catch (SQLException e) {
+            catch (Exception e) {
                 ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
                 failedList.add(customerPlusAccount);
             }
@@ -56,34 +55,34 @@ public enum BankingEngine {
         return returningMap;
     }
 
-    private void deleteCustomer(long customerID) throws SQLException{
-         DatabaseUtil.INSTANCE.deleteCustomer(customerID);
+    private void deleteCustomer(long customerID) throws Exception{
+         db.deleteCustomer(customerID);
     }
 
-    private Customers uploadCustomer(Customers customerInfo) throws SQLException {
-        long customerID= DatabaseUtil.INSTANCE.uploadCustomer(customerInfo);
+    private Customers uploadCustomer(Customers customerInfo) throws Exception {
+        long customerID= db.uploadCustomer(customerInfo);
         customerInfo.setCustomerID(customerID);
         DataRecord.INSTANCE.addCustomerToMemory(customerInfo);
         return customerInfo;
     }
 
-    public Accounts uploadAccount(Accounts accountInfo) throws SQLException{
-        long accountNumber= DatabaseUtil.INSTANCE.uploadAccount(accountInfo);
+    public Accounts uploadAccount(Accounts accountInfo) throws Exception{
+        long accountNumber= db.uploadAccount(accountInfo);
         accountInfo.setAccountNumber(accountNumber);
         //need to set accid here- done
         DataRecord.INSTANCE.addAccountToMemory(accountInfo);
         return accountInfo;
     }
 
-    public void refillCustomerCache() throws SQLException{
-        ArrayList<Customers> customerList = DatabaseUtil.INSTANCE.downloadCustomerRecord();
+    public void refillCustomerCache() throws Exception{
+        ArrayList<Customers> customerList = (ArrayList<Customers>) db.downloadCustomerRecord();
         for (Customers details:customerList){
             DataRecord.INSTANCE.addCustomerToMemory(details);
         }
     }
 
-    public void refillAccountCache() throws SQLException{
-        ArrayList<Accounts> accountList = DatabaseUtil.INSTANCE.downloadAccountRecord();
+    public void refillAccountCache() throws Exception {
+        ArrayList<Accounts> accountList = (ArrayList<Accounts>) db.downloadAccountRecord();
         for (Accounts details:accountList){
             DataRecord.INSTANCE.addAccountToMemory(details);
         }
@@ -108,11 +107,11 @@ public enum BankingEngine {
         return DataRecord.INSTANCE.checkCustomer(customerID);
     }
 
-    public static void closeConnection(){
+    public void closeConnection(){
         try {
-            DatabaseUtil.INSTANCE.closeConnection();
+            db.cleanup();
         }
-        catch(SQLException e){
+        catch(Exception e){
 
         }
     }

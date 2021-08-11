@@ -2,7 +2,6 @@ package banking;
 
 import banking.details.Accounts;
 import banking.details.Customers;
-import banking.details.DataRecord;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,12 +41,12 @@ public class AccountManagement {
                 }
             }
         }
-        catch (SQLException e){
+        catch (Exception e){
             System.out.println("Unable to process, please try again");
         }
     }
 
-    public void existingCustomer() throws SQLException {
+    public void existingCustomer() throws Exception {
         try {
             //remove thirupur code
             System.out.print("Enter your Customer ID: ");
