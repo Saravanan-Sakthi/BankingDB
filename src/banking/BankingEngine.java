@@ -1,24 +1,34 @@
 package banking;
 
-import banking.databasemanagement.DatabaseUtil;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.DataRecord;
 import banking.details.Persistence;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.FileReader;
+import java.sql.SQLException;
+import java.util.*;
+
+import static java.lang.Class.forName;
 
 public enum BankingEngine {
     INSTANCE;
-    private final Persistence db=new DatabaseUtil();
+    private Persistence db;
 
      BankingEngine() {
         try {
+            Properties p = new Properties();
+            FileReader fr= new FileReader("object.properties");
+            p.load(fr);
+            fr.close();
+            String className=p.getProperty("mySQL");
+            Class dbc = Class.forName(className);
+            db = (Persistence) dbc.newInstance();
             refillAccountCache();
             refillCustomerCache();
         }
         catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -55,8 +65,34 @@ public enum BankingEngine {
         return returningMap;
     }
 
-    private void deleteCustomer(long customerID) throws Exception{
-         db.deleteCustomer(customerID);
+    public void deleteCustomer(long customerID) throws Exception{
+         HashMap<Long, HashMap<Long, Accounts>> accountsMap = DataRecord.INSTANCE.getAccountDetails();
+         HashMap<Long, Customers> customerMap = DataRecord.INSTANCE.getCustomerDetails();
+         HashMap<Long, Accounts> accounts = accountsMap.get(customerID);
+         if(accounts != null) {
+             Iterator it= accounts.entrySet().iterator();
+             while(it.hasNext()){
+                 Map.Entry item = (Map.Entry) it.next();
+                 it.remove();
+             }
+             deleteAccount(accounts);
+             db.deactivateCustomer(customerID);
+             accountsMap.remove(customerID);
+             customerMap.remove(customerID);
+         }
+    }
+
+    private void deleteAccount(HashMap<Long, Accounts> accounts) throws Exception{
+         for(Accounts data : accounts.values()){
+             deleteAccount(data.getCustomerID(), data.getAccountNumber());
+         }
+    }
+
+    public void deleteAccount(long customerID, long accountNumber) throws Exception {
+        db.deactivateAccount(accountNumber);
+        HashMap<Long, HashMap<Long, Accounts>> accountMap = DataRecord.INSTANCE.getAccountDetails();
+        HashMap<Long, Accounts> accounts = accountMap.get(customerID);
+        accounts.remove(accountNumber);
     }
 
     private Customers uploadCustomer(Customers customerInfo) throws Exception {
@@ -139,4 +175,27 @@ public enum BankingEngine {
         return object;
     }
 
+    public void depositMoney(long customerID, long accountNumber, float deposit) throws Exception{
+        try{
+            db.depositMoney(accountNumber, deposit);
+            HashMap<Long, HashMap<Long, Accounts>> accountMap = DataRecord.INSTANCE.getAccountDetails();
+            HashMap<Long, Accounts> accounts = accountMap.get(customerID);
+            Accounts accountInfo = accounts.get(accountNumber);
+            accountInfo.setAccountBalance(accountInfo.getAccountBalance() + deposit);
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public void withdrawMoney(long customerID, long accountNumber, float withdraw) throws Exception{
+         try {
+             db.withdrawMoney(accountNumber, withdraw);
+         }
+         catch (SQLException e){
+             e.printStackTrace();
+             throw e;
+         }
+    }
 }

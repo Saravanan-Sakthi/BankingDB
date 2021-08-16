@@ -4,11 +4,11 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class BankingDriver {
-    private static Scanner scan = new Scanner(System.in);
+    private static final Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args){
        while (true) {
-            System.out.print("1. Create Account\n2. View details\n3. Exit\nEnter the option: ");
+            System.out.print("1. Create Account\n2. View details\n3. Delete Account\n4. Delete Customer\n5. Transaction\n6. Exit\nEnter the option: ");
             try {
                 int option = scan.nextInt();
                 AccountManagement acm = new AccountManagement(scan);
@@ -17,6 +17,12 @@ public class BankingDriver {
                 } else if (option == 2) {
                     acm.viewData();
                 } else if (option == 3) {
+                    acm.deleteAccount();
+                }else if(option == 4){
+                    acm.deleteCustomer();
+                }else if (option == 5){
+                    acm.transactions();
+                } else if (option == 6) {
                     BankingEngine.INSTANCE.closeConnection();
                     break;
                 } else {

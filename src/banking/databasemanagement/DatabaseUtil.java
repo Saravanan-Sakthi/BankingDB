@@ -34,9 +34,37 @@ public class DatabaseUtil implements Persistence {
         }
     }
 
+    @Override
+    public void deactivateAccount(long accountNumber) throws SQLException {
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Account_number` = '"+accountNumber+"');");
+        }
+    }
+
+    @Override
+    public void deactivateCustomer(long customerID) throws SQLException {
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
+        }
+    }
+
+    @Override
+    public void depositMoney(long accountNumber, float deposit) throws  SQLException{
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE Accounts SET Account_Balance= Account_Balance + "+deposit+" WHERE (Account_number = "+accountNumber+");");
+        }
+    }
+
+    @Override
+    public void withdrawMoney(long accountNumber, float withdraw) throws SQLException{
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE Accounts SET Account_Balance = Account_Balance - "+withdraw+" WHERE (Account_number = "+accountNumber+");");
+        }
+    }
+
     public List<Accounts> downloadAccountRecord() throws SQLException {
         ArrayList<Accounts> returnAccount= new ArrayList<>();
-        try (Statement st = connection.createStatement(); ResultSet resSet = st.executeQuery("SELECT * FROM Accounts;")) {
+        try (Statement st = connection.createStatement(); ResultSet resSet = st.executeQuery("SELECT * FROM Accounts WHERE Activitystatus = 1;")) {
             while (resSet.next()) {
                 Accounts detail = new Accounts();
                 detail.setCustomerID(resSet.getLong("Customer_ID"));
@@ -55,7 +83,7 @@ public class DatabaseUtil implements Persistence {
         ResultSet resSet= null;
         try {
             st = connection.createStatement();
-            resSet = st.executeQuery("SELECT * FROM Customers");
+            resSet = st.executeQuery("SELECT * FROM Customers WHERE Activitystatus = 1");
             while (resSet.next()) {
                 Customers detail = new Customers();
                 detail.setCustomerID(resSet.getLong("Customer_ID"));
@@ -130,7 +158,7 @@ public class DatabaseUtil implements Persistence {
         return accountNumber;
     }
 
-    public boolean deleteCustomer(long customerID) throws SQLException {
+/*    public boolean deleteCustomer(long customerID) throws SQLException {
         PreparedStatement st= null;
         boolean status;
         try {
@@ -147,5 +175,5 @@ public class DatabaseUtil implements Persistence {
             }
         }
         return status;
-    }
+    }*/
 }

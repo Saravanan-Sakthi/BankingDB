@@ -23,7 +23,6 @@ public enum DataRecord {
     }
 
     public HashMap<Long,HashMap<Long,Accounts>> getAccountDetails() {
-        System.out.println("getAccount");
         return this.accountDetails;
     }
 

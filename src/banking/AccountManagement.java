@@ -2,6 +2,7 @@ package banking;
 
 import banking.details.Accounts;
 import banking.details.Customers;
+import banking.details.DataRecord;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -134,6 +135,78 @@ public class AccountManagement {
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input try again");
             }
+        }
+    }
+
+    public void deleteAccount(){
+        System.out.print("Enter your Customer ID : ");
+        long customerID = scan.nextLong();
+        System.out.print("Enter the Account Number you want to delete : ");
+        long accountNumber = scan.nextLong();
+        try {
+            BankingEngine.INSTANCE.deleteAccount(customerID, accountNumber);
+        }
+        catch (Exception e){
+            System.out.println("cannot delete account");
+        }
+    }
+
+    public void deleteCustomer() {
+        System.out.print("Enter the customer ID you want to delete : ");
+        long customerID = scan.nextLong();
+        try {
+            BankingEngine.INSTANCE.deleteCustomer(customerID);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("cannot delete customer");
+        }
+    }
+
+    public void transactions() {
+        while (true) {
+            try {
+                System.out.print("1. Withdraw money\n2. Deposit money\n3. Exit\nEnter the option :");
+                int option = scan.nextInt();
+                if(option == 3){
+                    break;
+                }
+                System.out.print("Enter your Customer ID : ");
+                long customerID = scan.nextLong();
+                System.out.print("Enter the Account number : ");
+                long accountNumber = scan.nextLong();
+                if(option ==1){
+                    withdrawMoney(customerID, accountNumber);
+                }else if(option == 2){
+                    depositMoney(customerID, accountNumber);
+                }else {
+                    System.out.println("Invalid input");
+                }
+            }
+            catch (InputMismatchException e){
+                System.out.println("Invalid input");
+            }
+        }
+    }
+
+    private void depositMoney(long customerID, long accountNumber) {
+        try {
+            System.out.print("Enter the money you want to deposit : ");
+            float deposit = scan.nextFloat();
+            BankingEngine.INSTANCE.depositMoney(customerID, accountNumber, deposit);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void withdrawMoney(long customerID, long accountNumber) {
+        try {
+            System.out.print("Enter the money you want to withdraw : ");
+            float withdraw = scan.nextFloat();
+            BankingEngine.INSTANCE.withdrawMoney(customerID, accountNumber, withdraw);
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
     }
 }
