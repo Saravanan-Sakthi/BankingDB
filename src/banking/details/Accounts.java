@@ -27,7 +27,13 @@ public class Accounts {  // Plain Old Java Object for account info
     }
 
     public void setAccountBalance(float accountBalance) {
-        this.accountBalance = accountBalance;
+        if(accountBalance >=5000) {
+            this.accountBalance = accountBalance;
+        }
+        else{
+            System.out.println("Exception low balance");
+            //exception
+        }
     }
 
     public String getBranch() {

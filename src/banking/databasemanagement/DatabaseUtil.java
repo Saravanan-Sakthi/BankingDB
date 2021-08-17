@@ -3,6 +3,7 @@ package banking.databasemanagement;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.Persistence;
+import banking.management.BankingException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseUtil implements Persistence {
-    private Connection connection = null;
+    private Connection connection;
 
-    public DatabaseUtil() {
+    public DatabaseUtil() throws  BankingException{
         try {
             //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
@@ -26,43 +27,99 @@ public class DatabaseUtil implements Persistence {
         }
         catch(SQLException e){
             e.printStackTrace();
+            throw new BankingException("There is a problem connecting to the database");
         }
     }
-    public void cleanup() throws Exception {
+    public void cleanup() throws BankingException {
         if (connection != null) {
-            connection.close();
+            try {
+                connection.close();
+            }catch (SQLException e){
+                e.printStackTrace();
+                throw new BankingException("There is a problem in closing connection");
+            }
+        }
+        else{
+            throw new BankingException("You are trying to close an unestablished connection");
         }
     }
 
     @Override
-    public void deactivateAccount(long accountNumber) throws SQLException {
+    public void deactivateAccount(long customerID, long accountNumber) throws BankingException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Account_number` = '"+accountNumber+"');");
         }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating the Accounts table");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
+        }
     }
 
     @Override
-    public void deactivateCustomer(long customerID) throws SQLException {
+    public void deactivateAccount(long customerID) throws BankingException {
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating the Accounts table ");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
+        }
+    }
+
+    @Override
+    public void deactivateCustomer(long customerID) throws BankingException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
         }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating the Customers table ");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
+        }
     }
 
     @Override
-    public void depositMoney(long accountNumber, float deposit) throws  SQLException{
+    public void depositMoney(long accountNumber, float deposit) throws  BankingException{
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE Accounts SET Account_Balance= Account_Balance + "+deposit+" WHERE (Account_number = "+accountNumber+");");
         }
-    }
-
-    @Override
-    public void withdrawMoney(long accountNumber, float withdraw) throws SQLException{
-        try(Statement st= connection.createStatement()){
-            st.executeUpdate("UPDATE Accounts SET Account_Balance = Account_Balance - "+withdraw+" WHERE (Account_number = "+accountNumber+");");
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating the Accounts table ");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
         }
     }
 
-    public List<Accounts> downloadAccountRecord() throws SQLException {
+    @Override
+    public void withdrawMoney(long accountNumber, float withdraw) throws BankingException{
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE Accounts SET Account_Balance = Account_Balance - "+withdraw+" WHERE (Account_number = "+accountNumber+");");
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating the Accounts table ");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
+        }
+    }
+
+    public List<Accounts> downloadAccountRecord() throws BankingException {
         ArrayList<Accounts> returnAccount= new ArrayList<>();
         try (Statement st = connection.createStatement(); ResultSet resSet = st.executeQuery("SELECT * FROM Accounts WHERE Activitystatus = 1;")) {
             while (resSet.next()) {
@@ -74,10 +131,18 @@ public class DatabaseUtil implements Persistence {
                 returnAccount.add(detail);
             }
         }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while downloading Accounts");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
+        }
         return returnAccount;
     }
 
-    public List<Customers> downloadCustomerRecord() throws SQLException {
+    public List<Customers> downloadCustomerRecord() throws BankingException {
         ArrayList<Customers> returnCustomer= new ArrayList<>();
         Statement st= null;
         ResultSet resSet= null;
@@ -94,6 +159,14 @@ public class DatabaseUtil implements Persistence {
                 returnCustomer.add(detail);
             }
         }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while downloading Customers");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database",e);
+        }
         finally{
             try {
                 resSet.close();
@@ -105,7 +178,7 @@ public class DatabaseUtil implements Persistence {
         return returnCustomer;
     }
 
-    public long uploadCustomer(Customers customerDetails) throws SQLException {
+    public long uploadCustomer(Customers customerDetails) throws BankingException {
         long customerID;
         PreparedStatement st= null;
         ResultSet resSet= null;
@@ -121,6 +194,14 @@ public class DatabaseUtil implements Persistence {
             resSet.next();
             customerID= resSet.getLong(1);
         }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating Customers");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database", e);
+        }
         finally {
             try {
                 resSet.close();
@@ -132,7 +213,7 @@ public class DatabaseUtil implements Persistence {
         return customerID;
     }
 
-    public long uploadAccount(Accounts details) throws SQLException {
+    public long uploadAccount(Accounts details) throws BankingException {
         long accountNumber;
         PreparedStatement st= null;
         ResultSet resSet= null;
@@ -146,6 +227,14 @@ public class DatabaseUtil implements Persistence {
             resSet = st.getGeneratedKeys();
             resSet.next();
             accountNumber= resSet.getLong(1);
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while updating Accounts");
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            throw new BankingException("No connection is established to Database");
         }
         finally {
             try {
