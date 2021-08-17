@@ -5,6 +5,10 @@ import banking.management.BankingException;
 import java.util.List;
 
 public interface Persistence {
+    /**
+     * @return
+     * @throws BankingException
+     */
     List<Accounts> downloadAccountRecord() throws BankingException;
 
     List<Customers> downloadCustomerRecord() throws BankingException;
@@ -27,4 +31,5 @@ public interface Persistence {
 
     void withdrawMoney(long accountNumber, float withdraw) throws  BankingException;
 
+    void deleteCustomerEntry(long customerID) throws BankingException;
 }

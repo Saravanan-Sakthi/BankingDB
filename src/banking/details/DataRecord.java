@@ -30,6 +30,10 @@ public enum DataRecord {
 
     }
 
+    public void deleteCustomer(long customerID){
+
+    }
+
     public HashMap<Long,HashMap<Long,Accounts>> getAccountDetails() throws BankingException {
         if(accountDetails==null){
             throw new BankingException("Record is unreachable - no record found");

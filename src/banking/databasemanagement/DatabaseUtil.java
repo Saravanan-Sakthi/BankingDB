@@ -247,15 +247,16 @@ public class DatabaseUtil implements Persistence {
         return accountNumber;
     }
 
-/*    public boolean deleteCustomer(long customerID) throws SQLException {
+    public void deleteCustomerEntry(long customerID) throws BankingException {
         PreparedStatement st= null;
-        boolean status;
         try {
             String query="DELETE FROM `Customers` WHERE (`Customer_ID` = ?);";
             st = connection.prepareStatement(query);
             st.setLong(1, customerID);
             st.execute();
-            status = true;
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw new BankingException("An error occurred while deleting entered entry");
         }
         finally {
             try {
@@ -263,6 +264,5 @@ public class DatabaseUtil implements Persistence {
             } catch (Exception e) {
             }
         }
-        return status;
-    }*/
+    }
 }

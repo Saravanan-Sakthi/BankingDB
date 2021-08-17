@@ -5,10 +5,11 @@ import banking.details.Customers;
 import banking.details.DataRecord;
 import banking.details.Persistence;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 
 public enum BankingEngine {
@@ -59,7 +60,7 @@ public enum BankingEngine {
                 }
                 catch(BankingException e){
                     e.printStackTrace();
-                    deleteCustomer(accountInfo.getCustomerID());
+                    db.deleteCustomerEntry(accountInfo.getCustomerID());
                     ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
                     failedList.add(customerPlusAccount);
                 }
@@ -96,6 +97,9 @@ public enum BankingEngine {
         }
         db.deactivateAccount(customerID, accountNumber);
         accounts.remove(accountNumber);
+        if(accounts.isEmpty()){   // If the user deletes the last/ only account the user ID is deactivated
+            deleteCustomer(customerID);
+        }
     }
 
     private Customers uploadCustomer(Customers customerInfo) throws BankingException {
