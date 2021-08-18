@@ -1,35 +1,33 @@
 package banking.details;
 
-import banking.management.BankingException;
+import banking.management.PersistenceException;
 
 import java.util.List;
 
 public interface Persistence {
     /**
      * @return
-     * @throws BankingException
+     * @throws PersistenceException
      */
-    List<Accounts> downloadAccountRecord() throws BankingException;
+    List<Accounts> downloadAccountRecord() throws PersistenceException;
 
-    List<Customers> downloadCustomerRecord() throws BankingException;
+    List<Customers> downloadCustomerRecord() throws PersistenceException;
 
-    long uploadCustomer(Customers customerDetails) throws BankingException;
+    long uploadCustomer(Customers customerDetails) throws PersistenceException;
 
-    long uploadAccount(Accounts details) throws BankingException;
+    long uploadAccount(Accounts details) throws PersistenceException;
 
-    //boolean deleteCustomer(long customerID) throws Exception;
+    void cleanup() throws PersistenceException;
 
-    void cleanup() throws BankingException;
+    void deactivateAccount(long customerID, long accountNumber) throws PersistenceException;
 
-    void deactivateAccount(long customerID, long accountNumber) throws BankingException;
+    void deactivateAccount(long customerID) throws PersistenceException;
 
-    void deactivateAccount(long customerID) throws BankingException;
+    void deactivateCustomer(long customerID) throws PersistenceException;
 
-    void deactivateCustomer(long customerID) throws BankingException;
+    void depositMoney(long accountNumber, float deposit) throws PersistenceException;
 
-    void depositMoney(long accountNumber, float deposit) throws BankingException;
+    void withdrawMoney(long accountNumber, float withdraw) throws PersistenceException;
 
-    void withdrawMoney(long accountNumber, float withdraw) throws  BankingException;
-
-    void deleteCustomerEntry(long customerID) throws BankingException;
+    void deleteCustomerEntry(long customerID) throws PersistenceException;
 }

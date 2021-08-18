@@ -2,7 +2,7 @@ package banking;
 
 import banking.management.AccountManagement;
 import banking.management.BankingEngine;
-import banking.management.BankingException;
+import banking.management.PersistenceException;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -11,6 +11,11 @@ public class BankingDriver {
     private static final Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args){
+        try {
+            BankingEngine.INSTANCE.kickStart();
+        } catch(PersistenceException e){
+            System.out.println(e);
+        }
        while (true) {
             System.out.print("1. Create Account\n2. View details\n3. Delete Account\n4. Delete Customer\n5. Transaction\n6. Exit\nEnter the option: ");
             try {
@@ -35,8 +40,8 @@ public class BankingDriver {
             } catch (InputMismatchException ex) {
                 System.out.println("Invalid input");
                 scan.next();
-            } catch (BankingException e) {
-                e.printStackTrace();
+            } catch (PersistenceException e) {
+                System.out.println(e);
             }
        }
     }

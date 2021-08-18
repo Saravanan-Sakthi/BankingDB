@@ -3,7 +3,6 @@ package banking.management;
 import banking.details.Accounts;
 import banking.details.Customers;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -41,7 +40,7 @@ public class AccountManagement {
                 }
             }
         }
-        catch (Exception e){
+        catch (InputMismatchException e){
             System.out.println("Unable to process, please try again");
         }
     }
@@ -67,8 +66,8 @@ public class AccountManagement {
         catch(InputMismatchException e){
             scan.nextLine();
             System.out.println("Invalid input try again");
-        } catch (BankingException e) {
-            e.printStackTrace();
+        } catch (PersistenceException e) {
+            System.out.println(e);
         }
     }
 
@@ -109,8 +108,8 @@ public class AccountManagement {
         catch(InputMismatchException e){
             scan.nextLine();
             System.out.println("Invalid input try again");
-        } catch (BankingException e) {
-            e.printStackTrace();
+        } catch (PersistenceException e) {
+            System.out.println(e);
         }
     }
 
@@ -137,8 +136,8 @@ public class AccountManagement {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input try again");
-            } catch (BankingException e) {
-                e.printStackTrace();
+            } catch (PersistenceException e) {
+                System.out.println(e);
             }
         }
     }
@@ -150,10 +149,11 @@ public class AccountManagement {
         long accountNumber = scan.nextLong();
         try {
             BankingEngine.INSTANCE.deleteAccount(customerID, accountNumber);
+            System.out.println("Deleted successfully");
         }
-        catch (BankingException e){
+        catch (PersistenceException e){
             System.out.println("cannot delete account");
-            e.printStackTrace();
+            System.out.println(e);
         }
     }
 
@@ -162,8 +162,9 @@ public class AccountManagement {
         long customerID = scan.nextLong();
         try {
             BankingEngine.INSTANCE.deleteCustomer(customerID);
-        } catch (BankingException e) {
-            e.printStackTrace();
+            System.out.println("Deleted successfully");
+        } catch (PersistenceException e) {
+            System.out.println(e);
             System.out.println("cannot delete customer");
         }
     }
@@ -200,8 +201,8 @@ public class AccountManagement {
             float deposit = scan.nextFloat();
             BankingEngine.INSTANCE.depositMoney(customerID, accountNumber, deposit);
         }
-        catch (BankingException e){
-            e.printStackTrace();
+        catch (PersistenceException e){
+            System.out.println(e);
         }
     }
 
@@ -211,8 +212,8 @@ public class AccountManagement {
             float withdraw = scan.nextFloat();
             BankingEngine.INSTANCE.withdrawMoney(customerID, accountNumber, withdraw);
         }
-        catch (BankingException e){
-            e.printStackTrace();
+        catch (PersistenceException e){
+            System.out.println(e);
         }
     }
 }

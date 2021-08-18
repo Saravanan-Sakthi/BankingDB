@@ -3,103 +3,92 @@ package banking.databasemanagement;
 import banking.details.Accounts;
 import banking.details.Customers;
 import banking.details.Persistence;
-import banking.management.BankingException;
+import banking.management.PersistenceException;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.DriverManager;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseUtil implements Persistence {
     private Connection connection;
 
-    public DatabaseUtil() throws  BankingException{
+    public DatabaseUtil() throws PersistenceException {
         try {
             //Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/inc14", "root", "K@r0!KuD!");
             //catch( ClassNotFoundException e){
             // e.printStackTrace();
             // }
-        }
-        catch(SQLException e){
+        } catch(Exception e){
             e.printStackTrace();
-            throw new BankingException("There is a problem connecting to the database");
+            throw new PersistenceException("There is a problem connecting to the database");
         }
     }
-    public void cleanup() throws BankingException {
+    public void cleanup() throws PersistenceException {
         if (connection != null) {
             try {
                 connection.close();
             }catch (SQLException e){
                 e.printStackTrace();
-                throw new BankingException("There is a problem in closing connection");
+                throw new PersistenceException("There is a problem in closing connection");
             }
         }
         else{
-            throw new BankingException("You are trying to close an unestablished connection");
+            throw new PersistenceException("You are trying to close an unestablished connection");
         }
     }
 
     @Override
-    public void deactivateAccount(long customerID, long accountNumber) throws BankingException {
+    public void deactivateAccount(long customerID, long accountNumber) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Account_number` = '"+accountNumber+"');");
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating the Accounts table");
+            throw new PersistenceException("An error occurred while updating the Accounts table");
         }
     }
 
     @Override
-    public void deactivateAccount(long customerID) throws BankingException {
+    public void deactivateAccount(long customerID) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating the Accounts table ");
+            throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
     }
 
     @Override
-    public void deactivateCustomer(long customerID) throws BankingException {
+    public void deactivateCustomer(long customerID) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating the Customers table ");
+            throw new PersistenceException("An error occurred while updating the Customers table ");
         }
     }
 
     @Override
-    public void depositMoney(long accountNumber, float deposit) throws  BankingException{
+    public void depositMoney(long accountNumber, float deposit) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE Accounts SET Account_Balance= Account_Balance + "+deposit+" WHERE (Account_number = "+accountNumber+");");
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating the Accounts table ");
+            throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
     }
 
     @Override
-    public void withdrawMoney(long accountNumber, float withdraw) throws BankingException{
+    public void withdrawMoney(long accountNumber, float withdraw) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE Accounts SET Account_Balance = Account_Balance - "+withdraw+" WHERE (Account_number = "+accountNumber+");");
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating the Accounts table ");
+            throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
     }
 
-    public List<Accounts> downloadAccountRecord() throws BankingException {
+    public List<Accounts> downloadAccountRecord() throws PersistenceException {
         ArrayList<Accounts> returnAccount= new ArrayList<>();
         try (Statement st = connection.createStatement(); ResultSet resSet = st.executeQuery("SELECT * FROM Accounts WHERE Activitystatus = 1;")) {
             while (resSet.next()) {
@@ -110,16 +99,15 @@ public class DatabaseUtil implements Persistence {
                 detail.setAccountBalance(resSet.getFloat("Account_Balance"));
                 returnAccount.add(detail);
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while downloading Accounts");
+            throw new PersistenceException("An error occurred while downloading Accounts");
         }
         return returnAccount;
     }
 
-    public List<Customers> downloadCustomerRecord() throws BankingException {
-        ArrayList<Customers> returnCustomer= new ArrayList<>();
+    public List<Customers> downloadCustomerRecord() throws PersistenceException {
+        List<Customers> returnCustomer= new ArrayList<>();
         Statement st= null;
         ResultSet resSet= null;
         try {
@@ -134,23 +122,23 @@ public class DatabaseUtil implements Persistence {
                 detail.setCity(resSet.getString("City"));
                 returnCustomer.add(detail);
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while downloading Customers");
+            throw new PersistenceException("An error occurred while downloading Customers");
         }
         finally{
             try {
                 resSet.close();
                 st.close();
-            }
-            catch (Exception e){
-            }
+            } catch (Exception e){}
         }
         return returnCustomer;
     }
 
-    public long uploadCustomer(Customers customerDetails) throws BankingException {
+    public long uploadCustomer(Customers customerDetails) throws PersistenceException {
+        if(customerDetails == null){
+            throw new PersistenceException("'Nothing' cannot be added to the customers table");
+        }
         long customerID;
         PreparedStatement st= null;
         ResultSet resSet= null;
@@ -165,23 +153,25 @@ public class DatabaseUtil implements Persistence {
             resSet = st.getGeneratedKeys();
             resSet.next();
             customerID= resSet.getLong(1);
-        }
-        catch (SQLException e){
+        } catch (SQLSyntaxErrorException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating Customers");
-        }
-        finally {
+            throw new PersistenceException("The value you entered is not recognised as valid");
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new PersistenceException("An error occurred while updating Customers");
+        } finally {
             try {
                 resSet.close();
                 st.close();
-            }
-            catch(Exception e){
-            }
+            } catch(Exception e){}
         }
         return customerID;
     }
 
-    public long uploadAccount(Accounts details) throws BankingException {
+    public long uploadAccount(Accounts details) throws PersistenceException {
+        if(details == null){
+            throw new PersistenceException("'Nothing' cannot be added to the accounts table");
+        }
         long accountNumber;
         PreparedStatement st= null;
         ResultSet resSet= null;
@@ -195,23 +185,22 @@ public class DatabaseUtil implements Persistence {
             resSet = st.getGeneratedKeys();
             resSet.next();
             accountNumber= resSet.getLong(1);
-        }
-        catch (SQLException e){
+        } catch (SQLSyntaxErrorException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while updating Accounts");
-        }
-        finally {
+            throw new PersistenceException("The value you entered is not recognised as valid");
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new PersistenceException("An error occurred while updating Accounts");
+        } finally {
             try {
                 resSet.close();
                 st.close();
-            }
-            catch (Exception e){
-            }
+            } catch (Exception e){}
         }
         return accountNumber;
     }
 
-    public void deleteCustomerEntry(long customerID) throws BankingException {
+    public void deleteCustomerEntry(long customerID) throws PersistenceException {
         PreparedStatement st= null;
         try {
             String query="DELETE FROM `Customers` WHERE (`Customer_ID` = ?);";
@@ -220,7 +209,7 @@ public class DatabaseUtil implements Persistence {
             st.execute();
         }catch (SQLException e){
             e.printStackTrace();
-            throw new BankingException("An error occurred while deleting entered entry");
+            throw new PersistenceException("An error occurred while deleting entered entry");
         }
         finally {
             try {
