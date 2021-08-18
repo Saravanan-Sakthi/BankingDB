@@ -53,10 +53,6 @@ public class DatabaseUtil implements Persistence {
             e.printStackTrace();
             throw new BankingException("An error occurred while updating the Accounts table");
         }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
-        }
     }
 
     @Override
@@ -67,10 +63,6 @@ public class DatabaseUtil implements Persistence {
         catch (SQLException e){
             e.printStackTrace();
             throw new BankingException("An error occurred while updating the Accounts table ");
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
         }
     }
 
@@ -83,10 +75,6 @@ public class DatabaseUtil implements Persistence {
             e.printStackTrace();
             throw new BankingException("An error occurred while updating the Customers table ");
         }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
-        }
     }
 
     @Override
@@ -98,10 +86,6 @@ public class DatabaseUtil implements Persistence {
             e.printStackTrace();
             throw new BankingException("An error occurred while updating the Accounts table ");
         }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
-        }
     }
 
     @Override
@@ -112,10 +96,6 @@ public class DatabaseUtil implements Persistence {
         catch (SQLException e){
             e.printStackTrace();
             throw new BankingException("An error occurred while updating the Accounts table ");
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
         }
     }
 
@@ -134,10 +114,6 @@ public class DatabaseUtil implements Persistence {
         catch (SQLException e){
             e.printStackTrace();
             throw new BankingException("An error occurred while downloading Accounts");
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
         }
         return returnAccount;
     }
@@ -162,10 +138,6 @@ public class DatabaseUtil implements Persistence {
         catch (SQLException e){
             e.printStackTrace();
             throw new BankingException("An error occurred while downloading Customers");
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database",e);
         }
         finally{
             try {
@@ -198,10 +170,6 @@ public class DatabaseUtil implements Persistence {
             e.printStackTrace();
             throw new BankingException("An error occurred while updating Customers");
         }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database", e);
-        }
         finally {
             try {
                 resSet.close();
@@ -231,10 +199,6 @@ public class DatabaseUtil implements Persistence {
         catch (SQLException e){
             e.printStackTrace();
             throw new BankingException("An error occurred while updating Accounts");
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            throw new BankingException("No connection is established to Database");
         }
         finally {
             try {
