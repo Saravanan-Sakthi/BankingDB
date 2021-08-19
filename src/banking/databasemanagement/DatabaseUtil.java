@@ -39,53 +39,66 @@ public class DatabaseUtil implements Persistence {
     }
 
     @Override
-    public void deactivateAccount(long customerID, long accountNumber) throws PersistenceException {
+    public long deactivateAccount(long customerID, long accountNumber) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Account_number` = '"+accountNumber+"');");
+            int numberOfUpdates = st.getUpdateCount();
+            if(numberOfUpdates == 0){
+                throw new PersistenceException("The account is not present in the record, cannot delete unexciting Account");
+            }
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Accounts table");
         }
+        return accountNumber;
     }
 
     @Override
-    public void deactivateAccount(long customerID) throws PersistenceException {
+    public long deactivateAccount(long customerID) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
+        return customerID;
     }
 
     @Override
-    public void deactivateCustomer(long customerID) throws PersistenceException {
+    public long deactivateCustomer(long customerID) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
+            int numberOfUpdates = st.getUpdateCount();
+            if(numberOfUpdates == 0){
+                throw new PersistenceException("The account is not present in the record, cannot delete unexciting Account");
+            }
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Customers table ");
         }
+        return customerID;
     }
 
     @Override
-    public void depositMoney(long accountNumber, float deposit) throws PersistenceException {
+    public boolean depositMoney(long accountNumber, float deposit) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE Accounts SET Account_Balance= Account_Balance + "+deposit+" WHERE (Account_number = "+accountNumber+");");
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
+        return true;
     }
 
     @Override
-    public void withdrawMoney(long accountNumber, float withdraw) throws PersistenceException {
+    public boolean withdrawMoney(long accountNumber, float withdraw) throws PersistenceException {
         try(Statement st= connection.createStatement()){
             st.executeUpdate("UPDATE Accounts SET Account_Balance = Account_Balance - "+withdraw+" WHERE (Account_number = "+accountNumber+");");
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Accounts table ");
         }
+        return true;
     }
 
     public List<Accounts> downloadAccountRecord() throws PersistenceException {
@@ -200,7 +213,7 @@ public class DatabaseUtil implements Persistence {
         return accountNumber;
     }
 
-    public void deleteCustomerEntry(long customerID) throws PersistenceException {
+    /*public void deleteCustomerEntry(long customerID) throws PersistenceException {
         PreparedStatement st= null;
         try {
             String query="DELETE FROM `Customers` WHERE (`Customer_ID` = ?);";
@@ -217,5 +230,5 @@ public class DatabaseUtil implements Persistence {
             } catch (Exception e) {
             }
         }
-    }
+    }*/
 }

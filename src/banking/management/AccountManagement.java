@@ -93,16 +93,15 @@ public class AccountManagement {
                 Customers customerDetails = BankingEngine.INSTANCE.getCustomerObject(name, email, mobile, city);
                 Accounts accountDetails = BankingEngine.INSTANCE.getAccountObject(accountBalance, branch);
 
-                ArrayList<Object> customerPlusAccount =new ArrayList<>();
+                ArrayList<Object> customerPlusAccount = new ArrayList<>();
                 customerPlusAccount.add(customerDetails);
                 customerPlusAccount.add(accountDetails);
                 bunchList.add(customerPlusAccount);
-
+            }
                 HashMap<String, ArrayList<ArrayList<Object>>> uploadedData = BankingEngine.INSTANCE.uploadCustomer(bunchList);
 
                 System.out.println("Upload result ");
                 System.out.println(uploadedData);
-            }
 
         }
         catch(InputMismatchException e){
@@ -148,8 +147,8 @@ public class AccountManagement {
         System.out.print("Enter the Account Number you want to delete : ");
         long accountNumber = scan.nextLong();
         try {
-            BankingEngine.INSTANCE.deleteAccount(customerID, accountNumber);
-            System.out.println("Deleted successfully");
+            long deleted = BankingEngine.INSTANCE.deleteAccount(customerID, accountNumber);
+            System.out.println("Deleted successfully the Account : "+deleted);
         }
         catch (PersistenceException e){
             System.out.println("cannot delete account");
@@ -161,8 +160,8 @@ public class AccountManagement {
         System.out.print("Enter the customer ID you want to delete : ");
         long customerID = scan.nextLong();
         try {
-            BankingEngine.INSTANCE.deleteCustomer(customerID);
-            System.out.println("Deleted successfully");
+            long deleted = BankingEngine.INSTANCE.deleteCustomer(customerID);
+            System.out.println("Deleted successfully the customer ID : "+deleted);
         } catch (PersistenceException e) {
             System.out.println(e);
             System.out.println("cannot delete customer");
@@ -196,24 +195,28 @@ public class AccountManagement {
     }
 
     private void depositMoney(long customerID, long accountNumber) {
+        float availableBalance=0;
         try {
             System.out.print("Enter the money you want to deposit : ");
             float deposit = scan.nextFloat();
-            BankingEngine.INSTANCE.depositMoney(customerID, accountNumber, deposit);
+            availableBalance = BankingEngine.INSTANCE.depositMoney(customerID, accountNumber, deposit);
         }
         catch (PersistenceException e){
             System.out.println(e);
         }
+        System.out.println(availableBalance);
     }
 
     private void withdrawMoney(long customerID, long accountNumber) {
+        float availableBalance=0;
         try {
             System.out.print("Enter the money you want to withdraw : ");
             float withdraw = scan.nextFloat();
-            BankingEngine.INSTANCE.withdrawMoney(customerID, accountNumber, withdraw);
+            availableBalance = BankingEngine.INSTANCE.withdrawMoney(customerID, accountNumber, withdraw);
         }
         catch (PersistenceException e){
             System.out.println(e);
         }
+        System.out.println(availableBalance);
     }
 }

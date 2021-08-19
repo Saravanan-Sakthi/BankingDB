@@ -59,7 +59,7 @@ public enum BankingEngine {
                 }
                 catch(PersistenceException e){
                     e.printStackTrace();
-                    db.deleteCustomerEntry(accountInfo.getCustomerID());
+                    deleteCustomer(accountInfo.getCustomerID());
                     ArrayList<ArrayList<Object>> failedList = returningMap.get("Failure");
                     failedList.add(customerPlusAccount);
                 }
@@ -71,34 +71,6 @@ public enum BankingEngine {
             }
         }
         return returningMap;
-    }
-
-    public void deleteCustomer(long customerID) throws PersistenceException {
-        HashMap<Long, HashMap<Long, Accounts>> accountsMap = DataRecord.INSTANCE.getAccountDetails();
-        HashMap<Long, Customers> customerMap = DataRecord.INSTANCE.getCustomerDetails();
-        HashMap<Long, Accounts> accounts = accountsMap.get(customerID);
-        if(accounts == null){
-            throw new PersistenceException("You are not a customer of this bank, kindly recheck the bank address");
-        }
-        db.deactivateAccount(customerID);
-        db.deactivateCustomer(customerID);
-        accountsMap.remove(customerID);
-        customerMap.remove(customerID);
-    }
-
-    public void deleteAccount(long customerID, long accountNumber) throws PersistenceException {
-        HashMap<Long, HashMap<Long, Accounts>> accountMap = DataRecord.INSTANCE.getAccountDetails();
-        HashMap<Long, Accounts> accounts = accountMap.get(customerID);
-        if(accounts == null){
-            throw new PersistenceException("You are not a customer of this bank, kindly recheck the bank address");
-        }else if(! accounts.containsKey(accountNumber)){
-            throw new PersistenceException("This account does not belong to you, may be not to anyone");
-        }
-        db.deactivateAccount(customerID, accountNumber);
-        accounts.remove(accountNumber);
-        if(accounts.isEmpty()){   // If the user deletes the last/ only account the user ID is deactivated
-            deleteCustomer(customerID);
-        }
     }
 
     private Customers uploadCustomer(Customers customerInfo) throws PersistenceException {
@@ -114,6 +86,8 @@ public enum BankingEngine {
     public Accounts uploadAccount(Accounts accountInfo) throws PersistenceException {
         if(accountInfo == null){
             throw new PersistenceException("No information regarding accounts are available");
+        }else if(!validateCustomer(accountInfo.getCustomerID())){
+            throw new PersistenceException("This customer ID is not ours, please check ");
         }
         long accountNumber= db.uploadAccount(accountInfo);
         accountInfo.setAccountNumber(accountNumber);
@@ -154,42 +128,29 @@ public enum BankingEngine {
     }
 
     public Customers downloadCustomer(long customerID) throws PersistenceException {
+        if(!validateCustomer(customerID)){
+            throw new PersistenceException("poda fool - please enter correct Customer ID");
+        }
         HashMap<Long, Customers> customersMap =DataRecord.INSTANCE.getCustomerDetails();
-        if(customersMap ==null){
-            throw new PersistenceException("There is no records available");
-        }
         Customers info= customersMap.get(customerID);
-        if(info == null){
-            throw new PersistenceException("There is no available data about the customerID you entered");
-        }
         return info;
     }
 
     public Accounts downloadAccount(long customerID, long accountNumber) throws PersistenceException {
+        if (!validateAccount(customerID, accountNumber)) {
+            throw new PersistenceException("You do not have that account, please check the account number and customer ID");
+        }
         HashMap<Long, Accounts> individualAccounts= downloadAccount(customerID);
-        if (individualAccounts == null){
-            throw new PersistenceException("There is no available data about the customerID you entered");
-        }else if(individualAccounts.isEmpty()){
-            throw new PersistenceException("You don't have any accounts in this bank, kindly create a new account");
-        }
         Accounts info = individualAccounts.get(accountNumber);
-        if(info == null){
-            throw new PersistenceException("You can access neither non-existing account nor other people's account");
-        }
         return info;
     }
 
     public HashMap<Long, Accounts> downloadAccount(long customerID) throws PersistenceException {
+        if(!validateCustomer(customerID)){
+            throw new PersistenceException("You do not hold any customer position in this bank, kindly create account or check the Customer ID");
+        }
         HashMap<Long , HashMap<Long, Accounts>> accountsMap=DataRecord.INSTANCE.getAccountDetails();
-        if(accountsMap ==null){
-            throw new PersistenceException("There is no records available");
-        }
         HashMap<Long, Accounts> individualAccounts= accountsMap.get(customerID);
-        if (individualAccounts == null){
-            throw new PersistenceException("There is no available data about the customerID you entered");
-        }else if(individualAccounts.isEmpty()){
-            throw new PersistenceException("You don't have any accounts in this bank, kindly create a new account");
-        }
         return individualAccounts;
     }
 
@@ -202,8 +163,10 @@ public enum BankingEngine {
         }
     }
 
-    public void closeConnection() throws PersistenceException {
-        db.cleanup();
+    public void closeConnection() {
+        try {
+            db.cleanup();
+        } catch (Exception e){}
     }
 
     public Customers getCustomerObject(String name, String email, long mobile, String city){
@@ -229,47 +192,94 @@ public enum BankingEngine {
         return object;
     }
 
-    public void depositMoney(long customerID, long accountNumber, float deposit) throws PersistenceException {
+    public float depositMoney(long customerID, long accountNumber, float deposit) throws PersistenceException {
+        float availableBalance=0;
         try{
-            if(! checkCustomer(customerID)) {
-                throw new PersistenceException("Your Customer ID is not present in our bank");
+            if (!validateAccount(customerID, accountNumber)) {
+                throw new PersistenceException("You don't have any account with that account number or you are not our customer");
             }
             HashMap<Long, HashMap<Long, Accounts>> accountMap = DataRecord.INSTANCE.getAccountDetails();
             HashMap<Long, Accounts> accounts = accountMap.get(customerID);
             Accounts accountInfo = accounts.get(accountNumber);
-            if(accountInfo == null) {
-                throw new PersistenceException("No accounts available");
-            }
             accountInfo.setAccountBalance(accountInfo.getAccountBalance() + deposit);
+            availableBalance=accountInfo.getAccountBalance();
             db.depositMoney(accountNumber, deposit);
         }
         catch (PersistenceException e){
             e.printStackTrace();
             throw e;
         }
+        return availableBalance;
     }
 
-    public void withdrawMoney(long customerID, long accountNumber, float withdraw) throws PersistenceException {
+    public float withdrawMoney(long customerID, long accountNumber, float withdraw) throws PersistenceException {
+        float availableBalance=0;
         try {
-            if(! checkCustomer(customerID)) {
-                throw new PersistenceException("Your customer ID is not present in our bank");
+            if (!validateAccount(customerID, accountNumber)) {
+                throw new PersistenceException("You don't have any account with that account number or you are not our customer");
             }
             HashMap<Long, HashMap<Long, Accounts>> accountMap = DataRecord.INSTANCE.getAccountDetails();
             HashMap<Long, Accounts> accounts = accountMap.get(customerID);
-            if(accounts == null) {
-                throw new PersistenceException("Dear customer, you do not have such account");
-            }
             Accounts accountInfo = accounts.get(accountNumber);
             float balance = accountInfo.getAccountBalance();
             if(!(balance-withdraw >=5000)) {
                 throw new PersistenceException("You do not have sufficient balance to proceed, kindly sow before you start reaping");
             }
             accountInfo.setAccountBalance(balance-withdraw);
+            availableBalance=accountInfo.getAccountBalance();
             db.withdrawMoney(accountNumber, withdraw);
         }
         catch (PersistenceException e){
             e.printStackTrace();
             throw e;
         }
+        return availableBalance;
     }
+
+    public long deleteCustomer(long customerID) throws PersistenceException {
+        if(!validateCustomer(customerID)){
+            throw new PersistenceException("Please check the Customer ID, there are no records about the ID");
+        }
+        long deletedCustomer = db.deactivateAccount(customerID);
+        db.deactivateCustomer(customerID);
+        DataRecord.INSTANCE.removeCustomer(customerID);
+        DataRecord.INSTANCE.removeAccount(customerID);
+        return deletedCustomer;
+    }
+
+    public long deleteAccount(long customerID, long accountNumber) throws PersistenceException {
+        if (!validateAccount(customerID, accountNumber)) {
+            throw new PersistenceException("Dear customer, you are not having such account in our bank or you have entered wrong Account number");
+        }
+        long deletedAccount = db.deactivateAccount(customerID, accountNumber);
+        DataRecord.INSTANCE.removeAccount(customerID,accountNumber);
+        return deletedAccount;
+    }
+
+    private boolean validateAccount(long customerID, long accountNumber) throws PersistenceException{
+        if(!validateCustomer(customerID)){
+            throw new PersistenceException("You may have entered wrong Customer ID");
+        }
+        HashMap<Long, HashMap<Long, Accounts>> accountsMap = DataRecord.INSTANCE.getAccountDetails();
+        if(accountsMap == null || accountsMap.isEmpty()){
+            throw new PersistenceException("No Account record is available, kindly contact the bank");
+        }
+        HashMap<Long, Accounts> individualAccounts = accountsMap.get(customerID);
+        if(individualAccounts == null || individualAccounts.isEmpty() || !individualAccounts.containsKey(accountNumber)){
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateCustomer(long customerID) throws PersistenceException {
+        HashMap<Long, Customers> customerMap = DataRecord.INSTANCE.getCustomerDetails();
+        if(customerMap ==null || customerMap.isEmpty()){
+            throw new PersistenceException("No Customer data is available in the record, kindly contact the bank");
+        }
+        if(! customerMap.containsKey(customerID)){
+            return false;
+        }
+        return true;
+    }
+
 }

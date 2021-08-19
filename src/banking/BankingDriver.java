@@ -40,8 +40,6 @@ public class BankingDriver {
             } catch (InputMismatchException ex) {
                 System.out.println("Invalid input");
                 scan.next();
-            } catch (PersistenceException e) {
-                System.out.println(e);
             }
        }
     }

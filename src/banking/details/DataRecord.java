@@ -30,8 +30,15 @@ public enum DataRecord {
 
     }
 
-    public void deleteCustomer(long customerID){
-
+    public void removeCustomer(long customerID){
+        customerDetails.remove(customerID);
+    }
+    public void removeAccount(long customerID){
+        accountDetails.remove(customerID);
+    }
+    public void removeAccount(long customerID, long accountNumber) {
+        HashMap<Long,Accounts> individualAccounts = accountDetails.get(customerID);
+        individualAccounts.remove(accountNumber);
     }
 
     public HashMap<Long,HashMap<Long,Accounts>> getAccountDetails() throws PersistenceException {
@@ -65,6 +72,4 @@ public enum DataRecord {
             return false;
         }
     }
-
-
 }

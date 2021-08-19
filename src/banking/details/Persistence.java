@@ -19,15 +19,15 @@ public interface Persistence {
 
     void cleanup() throws PersistenceException;
 
-    void deactivateAccount(long customerID, long accountNumber) throws PersistenceException;
+    long deactivateAccount(long customerID, long accountNumber) throws PersistenceException;
 
-    void deactivateAccount(long customerID) throws PersistenceException;
+    long deactivateAccount(long customerID) throws PersistenceException;
 
-    void deactivateCustomer(long customerID) throws PersistenceException;
+    long deactivateCustomer(long customerID) throws PersistenceException;
 
-    void depositMoney(long accountNumber, float deposit) throws PersistenceException;
+    boolean depositMoney(long accountNumber, float deposit) throws PersistenceException;
 
-    void withdrawMoney(long accountNumber, float withdraw) throws PersistenceException;
+    boolean withdrawMoney(long accountNumber, float withdraw) throws PersistenceException;
 
-    void deleteCustomerEntry(long customerID) throws PersistenceException;
+    //void deleteCustomerEntry(long customerID) throws PersistenceException;
 }
