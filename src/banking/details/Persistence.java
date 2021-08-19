@@ -29,5 +29,9 @@ public interface Persistence {
 
     boolean withdrawMoney(long accountNumber, float withdraw) throws PersistenceException;
 
+    long reactivateCustomer(long customerID) throws PersistenceException;
+
+    long reactivateAccount(long accountNumber) throws PersistenceException;
+
     //void deleteCustomerEntry(long customerID) throws PersistenceException;
 }

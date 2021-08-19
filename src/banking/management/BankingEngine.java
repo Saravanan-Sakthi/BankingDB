@@ -253,7 +253,44 @@ public enum BankingEngine {
         }
         long deletedAccount = db.deactivateAccount(customerID, accountNumber);
         DataRecord.INSTANCE.removeAccount(customerID,accountNumber);
+        if(!validateAccount(customerID,-1)){
+            deleteCustomer(customerID);
+            throw new PersistenceException("Your Customer ID is deactivated as you have no active accounts");
+        }
         return deletedAccount;
+    }
+
+    public long reactivateCustomer(long customerID, long accountNumber) throws PersistenceException{
+        if(validateCustomer(customerID)){
+            throw new PersistenceException("You are already an active user, If you have any other issues kindly contact bank");
+        }
+        try {
+            db.reactivateCustomer(customerID);
+            DataRecord.INSTANCE.addCustomerToMemory(/*customer object*/);
+            try {
+                reactivateAccount(customerID, accountNumber);
+            } catch (PersistenceException e) {
+                e.printStackTrace();
+                deleteCustomer(customerID);
+            }
+        }catch (PersistenceException e){
+            e.printStackTrace();
+            throw new PersistenceException("You entered wrong Customer ID, please check");
+        }
+        return customerID;
+    }
+
+    public long reactivateAccount(long customerID, long accountNumber) throws PersistenceException{
+        if(validateAccount(customerID, accountNumber)){
+            throw new PersistenceException("This account is already active, If you have any other issues kindly contact bank");
+        }
+        try {
+            db.reactivateCustomer(customerID);
+        }catch (PersistenceException e){
+            e.printStackTrace();
+            throw new PersistenceException("You don't have such account");
+        }
+        return customerID;
     }
 
     private boolean validateAccount(long customerID, long accountNumber) throws PersistenceException{
@@ -265,7 +302,9 @@ public enum BankingEngine {
             throw new PersistenceException("No Account record is available, kindly contact the bank");
         }
         HashMap<Long, Accounts> individualAccounts = accountsMap.get(customerID);
-        if(individualAccounts == null || individualAccounts.isEmpty() || !individualAccounts.containsKey(accountNumber)){
+        if(individualAccounts == null || individualAccounts.isEmpty() ) {
+            return false;
+        } else if(!individualAccounts.containsKey(accountNumber) && accountNumber!=-1){
             return false;
         }
         return true;

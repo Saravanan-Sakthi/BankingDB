@@ -70,13 +70,41 @@ public class DatabaseUtil implements Persistence {
             st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '0' WHERE (`Customer_ID` = '"+customerID+"');");
             int numberOfUpdates = st.getUpdateCount();
             if(numberOfUpdates == 0){
-                throw new PersistenceException("The account is not present in the record, cannot delete unexciting Account");
+                throw new PersistenceException("The Customer data is not present in the record, cannot delete unexciting Account");
             }
         } catch (SQLException e){
             e.printStackTrace();
             throw new PersistenceException("An error occurred while updating the Customers table ");
         }
         return customerID;
+    }
+
+    public long reactivateCustomer(long customerID) throws PersistenceException{
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE `Customers` SET `Activitystatus` = '1' WHERE (`Customer_ID` = '"+customerID+"');");
+            int numberOfUpdates = st.getUpdateCount();
+            if(numberOfUpdates == 0){
+                throw new PersistenceException("The Customer data is not present in the record, cannot activate unexciting Account");
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new PersistenceException("An error occurred while updating the Customers table ");
+        }
+        return customerID;
+    }
+
+    public long reactivateAccount(long accountNumber) throws PersistenceException{
+        try(Statement st= connection.createStatement()){
+            st.executeUpdate("UPDATE `Accounts` SET `Activitystatus` = '1' WHERE (`Account_number` = '"+accountNumber+"');");
+            int numberOfUpdates = st.getUpdateCount();
+            if(numberOfUpdates == 0){
+                throw new PersistenceException("The account is not present in the record, cannot activate unexciting Account");
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new PersistenceException("An error occurred while updating the Customers table ");
+        }
+        return accountNumber;
     }
 
     @Override
