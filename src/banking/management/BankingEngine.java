@@ -266,7 +266,7 @@ public enum BankingEngine {
         }
         try {
             db.reactivateCustomer(customerID);
-            DataRecord.INSTANCE.addCustomerToMemory(/*customer object*/);
+            //DataRecord.INSTANCE.addCustomerToMemory(/*customer object*/);
             try {
                 reactivateAccount(customerID, accountNumber);
             } catch (PersistenceException e) {
